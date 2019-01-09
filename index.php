@@ -16,6 +16,7 @@ if(isset($_REQUEST['create']))
 			<select name="image">
 				<option>Ubuntu</option>
 				<option>Debian</option>
+				<option>CentOS</option>
 			</select>
 			<select name="nb">
 				<option>1</option>
