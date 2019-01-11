@@ -1,2 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document><data><action>create</action><image>Debian</image><nb>7</nb></data></document>
+<data>
+  <action>destroyall</action>
+  <image>0</image>
+  <nb>0</nb>
+</data>
