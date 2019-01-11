@@ -34,6 +34,16 @@ if(!empty($_POST))
 		$xml->save("demande.xml");
 		echo "Création de $nb conteneur(s) $image.";
 	}
+	
+	#on envoie demande.xml à la machine docker
+	#https://unix.stackexchange.com/questions/182483/scp-without-password-prompt-using-different-username
+	#cp -r ~/.ssh/ /var/www/
+	#chown www-data /var/www/.ssh
+	#chown www-data /var/www/.ssh/*
+	#chmod 777 /var/www/.ssh pour que ça marche une première fois
+	#chmod 755 /var/www/.ssh on remet des bons droits
+	
+	shell_exec('scp /var/www/pageDeGestion/html/demande.xml user@192.168.56.101:/home/user/DockerScripts');
 
 }
 
