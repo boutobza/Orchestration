@@ -14,12 +14,12 @@ if(!empty($_POST))
 	{
 		$rootTag->removeChild($rootTag->firstChild);
 	}
+	$dataTag = $xml->createElement("data");
 	if(isset($_REQUEST['create']))
 	{
 		$nb = $_REQUEST['nb'];
 		$image = $_REQUEST['image'];
 
-		$dataTag = $xml->createElement("data");
 
 		$actionTag = $xml->createElement("action","create");
 		$imageTag = $xml->createElement("image",$image);
@@ -31,10 +31,20 @@ if(!empty($_POST))
 
 		$rootTag->appendChild($dataTag);
 
-		$xml->save("demande.xml");
 		echo "Création de $nb conteneur(s) $image.";
 	}
-	
+	elseif(isset($_REQUEST['destroyall']))
+	{
+		echo "tout détruire";
+		$actionTag = $xml->createElement("action","destroyall");
+		$dataTag->appendChild($actionTag);
+
+		$rootTag->appendChild($dataTag);
+	}
+
+	#on enregistre la demande dans le fichier
+	$xml->save("demande.xml");
+
 	#on envoie demande.xml à la machine docker
 	#https://unix.stackexchange.com/questions/182483/scp-without-password-prompt-using-different-username
 	#cp -r ~/.ssh/ /var/www/
@@ -42,7 +52,7 @@ if(!empty($_POST))
 	#chown www-data /var/www/.ssh/*
 	#chmod 777 /var/www/.ssh pour que ça marche une première fois
 	#chmod 755 /var/www/.ssh on remet des bons droits
-	
+
 	shell_exec('scp /var/www/pageDeGestion/html/demande.xml user@192.168.56.101:/home/user/DockerScripts');
 
 }
@@ -75,6 +85,7 @@ $html='
 				<option>10</option>
 			</select>
 			<input type="submit" name="create" value="Créer"/>
+			<input type="submit" name="destroyall" value="Tout détruire"/>
 		</form>
 	</body>
 </html>
