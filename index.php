@@ -9,16 +9,16 @@ $containersInfoMatrix = $controller->displayContainersInfo();
 if(isset($_GET['action']))
 {
 	if(strcmp($_GET['action'], 'start') == 0){
-		echo '<script>alert(100);</script>';
+		$controller->createContainerActionXMLFile('start',$_GET['id']);
 	}
 	elseif(strcmp($_GET['action'], 'stop') == 0){
-		echo '<script>alert(200);</script>';
+		$controller->createContainerActionXMLFile('stop',$_GET['id']);
 	}
 	elseif(strcmp($_GET['action'], 'destroy') == 0){
 		$controller->createContainerActionXMLFile('destroy',$_GET['id']);
 	}
 	elseif(strcmp($_GET['action'], 'terminal') == 0){
-		echo '<script>alert(400);</script>';
+	//	$controller->createContainerActionXMLFile('terminal',$_GET['id']);
 	}
 
 	$controller->sendContainerActionXMLFile();
