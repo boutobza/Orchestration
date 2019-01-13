@@ -38,18 +38,36 @@ class Controller{
 		echo '<p>Fichier XML crée avec succes !</p>';
 	}
 	function displayContainersInfo () : array {
+		
+		$xml = new DOMDocument("1.0", "UTF-8");
+		$xml->formatOutput = true;
+		$xml->preserveWhiteSpace = false;
+		
+		$xml->load('retour.xml');
 
-		//shell_exec('chown www-data containers.info.xml');
-		$xml = simplexml_load_file('containers.info.xml');
-		$containersInfo = array($xml->id,
-			$xml->nom,
-			$xml->image,
-			$xml->etat);
-		foreach($containersInfo as $value){
-			//echo '<p>'.$value.'</p>';	
+		// recupere tout les id des conteneurs crees
+		$containersIDs = $xml->getElementsByTagName('id');
+		
+		// recupere tout les noms des conteneurs crees
+		$containersNames = $xml->getElementsByTagName('name');
+
+		// recupere tout les images utilisées pour les conteneurs crees
+		$containersImages= $xml->getElementsByTagName('img');
+
+		// recupere tout les etats des conteneurs crees
+		$containersStatus= $xml->getElementsByTagName('status');
+
+		// une matrice qui va contenir toutes les infos des conteneurs présentent dans le fichier retour.xml
+		$containersInfoMatrix = array(array());
+	
+		for($i = 0; $i < count($containersIDs); $i++){
+			$containersInfoMatrix[$i] = array($containersIDs[$i]->nodeValue,
+							  $containersNames[$i]->nodeValue,
+							  $containersImages[$i]->nodeValue,
+							  $containersStatus[$i]->nodeValue);
 		}
-		echo '<p>DONE!</p>';
-		return $containersInfo;
+
+		return $containersInfoMatrix;
 	}
 }
 ?>
