@@ -1,7 +1,29 @@
 <?php
 include ('Controller.php');
 #quand on a submit quelque chose on prépare notre fichier xml
-if(!empty($_POST))
+
+$controller = new Controller();
+
+$containersInfoMatrix = $controller->displayContainersInfo();
+
+if(isset($_GET['action']))
+{
+	if(strcmp($_GET['action'], 'start') == 0){
+		echo '<script>alert(100);</script>';
+	}
+	elseif(strcmp($_GET['action'], 'stop') == 0){
+		echo '<script>alert(200);</script>';
+	}
+	elseif(strcmp($_GET['action'], 'destroy') == 0){
+		$controller->createContainerActionXMLFile('destroy',$_GET['id']);
+	}
+	elseif(strcmp($_GET['action'], 'terminal') == 0){
+		echo '<script>alert(400);</script>';
+	}
+
+	$controller->sendContainerActionXMLFile();
+}
+elseif(!empty($_POST))
 {
 	# nécessite le paquet php-xml
 	# aussi chown www-data demande.xml
@@ -10,9 +32,7 @@ if(!empty($_POST))
 	#
 
 
-	$controller = new Controller();
 	
-	$containersInfoMatrix;
 
 	if(isset($_REQUEST['create']))
 	{
@@ -23,20 +43,12 @@ if(!empty($_POST))
 		$controller->createXMLFile('create',$image,$nb);
 
 		echo "Création de $nb conteneur(s) $image.";
-
-		$containersInfoMatrix = $controller->displayContainersInfo();
-
-		
-		
-		
-		
-
 	}
 	elseif(isset($_REQUEST['destroyall']))
 	{
-		echo "tout détruire";
 		$action = $_REQUEST['destroyall'];
 		$controller->createXMLFile('destroyall',0,0);
+		echo "Tout détruire";
 	}
 
 	$controller->sendXMLFile();
@@ -78,7 +90,6 @@ if(!empty($_POST))
 			</select>
 			<input type="submit" name="create" value="Créer"/>
 			<input type="submit" name="destroyall" value="Tout détruire"/>
-
 			<table border="1" width="80%">
 				<thead>
 					<th>ID</th>
@@ -100,20 +111,20 @@ if(!empty($_POST))
 						 */
 					for($j = 0; $j < 4; $j++){
 					?>
-					<td>
+					<td align='center'>
 					<?php
-					$containersInfoMatrix[$i][$j];
+					echo $containersInfoMatrix[$i][$j];
 					?>
 					</td>
 					<?php
 					}
 					// Les actions qu'on peut effectuer sur nos conteneurs
 					?>
-					<td>
-					<a href="#">Lancer</a>
-					<a href="#">Arrèter</a>
-					<a href="#">Détruire</a>
-					<a href="#">Info</a>
+					<td align='center'>
+					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=start" class="button">Lancer</a>
+					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=stop" class="button">Arreter</a>
+					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=destroy" class="button">Détruire</a>
+					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=terminal" class="button">Terminal</a>
 					</td>
 					</tr>
 					<?php
@@ -122,6 +133,25 @@ if(!empty($_POST))
 				</tbody>
 			</table>
 		</form>
+<button value='refresh' onClick='window.location.reload();'>Actualiser</button>
+
+
+<?php // afficher les liens LANCER, DETRUIRE ... comme! des boutons?>
+<style>
+
+.button {
+  font: bold 12px Arial;
+  text-decoration: none;
+  background-color: #EEEEEE;
+  color: #333333;
+  padding: 2px 6px 2px 6px;
+  border-top: 1px solid #CCCCCC;
+  border-right: 1px solid #333333;
+  border-bottom: 1px solid #333333;
+  border-left: 1px solid #CCCCCC;
+}
+
+</style>
 	</body>
 </html>
 
