@@ -23,7 +23,7 @@ if(isset($_GET['action']))
 
 	$controller->sendContainerActionXMLFile();
 }
-elseif(!empty($_POST))
+if(!empty($_POST))
 {
 	# nécessite le paquet php-xml
 	# aussi chown www-data demande.xml
@@ -41,8 +41,7 @@ elseif(!empty($_POST))
 		$action = $_REQUEST['create'];
 
 		$controller->createXMLFile('create',$image,$nb);
-
-		echo "Création de $nb conteneur(s) $image.";
+		header('Location: index.php');
 	}
 	elseif(isset($_REQUEST['destroyall']))
 	{
@@ -88,9 +87,9 @@ elseif(!empty($_POST))
 				<option>9</option>
 				<option>10</option>
 			</select>
-			<input type="submit" name="create" value="Créer"/>
+			<input type="submit" name="create" value="Créer" id='MyButton'/>
 			<input type="submit" name="destroyall" value="Tout détruire"/>
-			<table border="1" width="80%">
+			<table border="1" width="100%">
 				<thead>
 					<th>ID</th>
 					<th>NOM</th>
@@ -101,6 +100,7 @@ elseif(!empty($_POST))
 				<tbody>
 					<?php
 				//ici $i represente le nb de conteneurs qui sont creer il va etre recuperer depuis le fichier retour.xml pour des raisons de test j'ai mis un seul conten					eur pour tester
+						if(!empty($containersInfoMatrix[0][0])){
 					for($i = 0; $i < 1; $i++){
 					?>
 					<tr>
@@ -112,7 +112,7 @@ elseif(!empty($_POST))
 					for($j = 0; $j < 4; $j++){
 					?>
 					<td align='center'>
-					<?php
+<?php
 					echo $containersInfoMatrix[$i][$j];
 					?>
 					</td>
@@ -128,12 +128,11 @@ elseif(!empty($_POST))
 					</td>
 					</tr>
 					<?php
-					}
+					}}
 					?>
 				</tbody>
 			</table>
 		</form>
-<button value='refresh' onClick='window.location.reload();'>Actualiser</button>
 
 
 <?php // afficher les liens LANCER, DETRUIRE ... comme! des boutons?>
@@ -150,8 +149,16 @@ elseif(!empty($_POST))
   border-bottom: 1px solid #333333;
   border-left: 1px solid #CCCCCC;
 }
-
+a:hover { 
+  color: blue;
+}
 </style>
+<script>
+
+
+
+
+</script>
 	</body>
 </html>
 

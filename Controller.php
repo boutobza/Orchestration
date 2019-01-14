@@ -79,8 +79,9 @@ class Controller{
 		$xml->formatOutput = true;
 		$xml->preserveWhiteSpace = false;
 		
-		$xml->load('retour.xml');
+		$containersInfoMatrix = array(array());
 
+		if(@$xml->load('/var/www/pageDeGestion/html/retour.xml')){
 		// recupere tout les id des conteneurs crees
 		$containersIDs = $xml->getElementsByTagName('id');
 		
@@ -94,7 +95,6 @@ class Controller{
 		$containersStatus= $xml->getElementsByTagName('status');
 
 		// une matrice qui va contenir toutes les infos des conteneurs présentent dans le fichier retour.xml
-		$containersInfoMatrix = array(array());
 	
 		for($i = 0; $i < count($containersIDs); $i++){
 			$containersInfoMatrix[$i] = array($containersIDs[$i]->nodeValue,
@@ -102,7 +102,8 @@ class Controller{
 							  $containersImages[$i]->nodeValue,
 							  $containersStatus[$i]->nodeValue);
 		}
-
+		}
+		else echo '<script>alert("Pas de conteneurs à afficher !");</script>';
 		return $containersInfoMatrix;
 	}
 }
