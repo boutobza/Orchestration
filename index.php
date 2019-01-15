@@ -6,6 +6,8 @@ $controller = new Controller();
 
 $containersInfoMatrix = $controller->displayContainersInfo();
 
+$nbConteneursTotal = $controller->getContainersTotalNumber();
+
 if(isset($_GET['action']))
 {
 	if(strcmp($_GET['action'], 'start') == 0){
@@ -22,46 +24,32 @@ if(isset($_GET['action']))
 	}
 
 	$controller->sendContainerActionXMLFile();
+	header('Location: index.php');
+	exit;
 }
 if(!empty($_POST))
 {
-	# nécessite le paquet php-xml
-	# aussi chown www-data demande.xml
-		
-	#var_dump(file_exists("./Controller.php"));
-	#
-
-
-	
-
-	if(isset($_REQUEST['create']))
+	if(isset($_POST['create']))
 	{
-		$nb = $_REQUEST['nb'];
-		$image = $_REQUEST['image'];
-		$action = $_REQUEST['create'];
+		$nb = $_POST['nb'];
+		$image = $_POST['image'];
 
 		$controller->createXMLFile('create',$image,$nb);
-		header('Location: index.php');
+		echo '<script>alert("'.$nb.' conteneur(s) '.$image.' crée(s) avec succes !");</script>';
 	}
-	elseif(isset($_REQUEST['destroyall']))
+	elseif(isset($_POST['destroyall']))
 	{
-		$action = $_REQUEST['destroyall'];
+		$action = $_POST['destroyall'];
 		$controller->createXMLFile('destroyall',0,0);
-		echo "Tout détruire";
+		echo '<script>alert("Tout les conteneurs sont détruits");</script>';
 	}
 
-	$controller->sendXMLFile();
+		$controller->sendXMLFile();
+		header('Location: index.php');
+		exit;
 
 }
 ?>
-<?php//on met tout le html dans une variable que l'on echo
-/*
- *pour var $html je l'ai supprimé pour facilité les choses que 
- *je viens de faire 'creation du table quit contient les infos des conteneurs du maniere dynamique' 
- *mais si t'as qu'il a un importance STP dis mois
- */
-?>
-
 <!DOCTYPE html>
 <html>
 	<head>
@@ -101,7 +89,7 @@ if(!empty($_POST))
 					<?php
 				//ici $i represente le nb de conteneurs qui sont creer il va etre recuperer depuis le fichier retour.xml pour des raisons de test j'ai mis un seul conten					eur pour tester
 						if(!empty($containersInfoMatrix[0][0])){
-					for($i = 0; $i < 1; $i++){
+					for($i = 0; $i < $nbConteneursTotal ; $i++){
 					?>
 					<tr>
 <?php
@@ -121,7 +109,7 @@ if(!empty($_POST))
 					// Les actions qu'on peut effectuer sur nos conteneurs
 					?>
 					<td align='center'>
-					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=start" class="button">Lancer</a>
+					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=start" class="button" onClick='this.disabled = true' >Lancer</a>
 					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=stop" class="button">Arreter</a>
 					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=destroy" class="button">Détruire</a>
 					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=terminal" class="button">Terminal</a>

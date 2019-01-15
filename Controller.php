@@ -3,10 +3,24 @@ include('Net/SSH2.php');
 include('Net/SCP.php');
 class Controller{
 
+
+	public function getContainersTotalNumber() {
+		$xml = new DOMDocument("1.0", "UTF-8");
+		$xml->formatOutput = true;
+		$xml->preserveWhiteSpace = false;
+		
+
+		if(@$xml->load('/var/www/pageDeGestion/html/retour.xml')){
+		$containersIDs = $xml->getElementsByTagName('id');
+		
+		$nbConteneursTotal = count($containersIDs);
+		}
+		return $nbConteneursTotal;
+	}
+
 	// fonction qui permet d'envoyer le fichier demande.xml cree par la fonction createXMLFile()
-	function sendXMLFile(){
-
-
+	public function sendXMLFile(){
+		
 		$ssh = new NET_SSH2('192.168.56.101');
 		if(!$ssh->login('user','user'))// ici on met le username & password de l'hote distant 'dockerengine'
 		{
@@ -22,7 +36,7 @@ class Controller{
 
 	}
 	//fonction qui permet d'envoyer le fichier demande_container_action.xml cree par la fonction createContainerActionXMLFile() qui contient l'action choisie depuis la table html des actions qu'on veut appliquer sur un conteneur
-	function sendContainerActionXMLFile(){
+	public function sendContainerActionXMLFile(){
 
 
 		$ssh = new NET_SSH2('192.168.56.101');
@@ -79,6 +93,7 @@ class Controller{
 		$xml->formatOutput = true;
 		$xml->preserveWhiteSpace = false;
 		
+		// une matrice qui va contenir toutes les infos des conteneurs présentent dans le fichier retour.xml
 		$containersInfoMatrix = array(array());
 
 		if(@$xml->load('/var/www/pageDeGestion/html/retour.xml')){
@@ -94,16 +109,22 @@ class Controller{
 		// recupere tout les etats des conteneurs crees
 		$containersStatus= $xml->getElementsByTagName('status');
 
-		// une matrice qui va contenir toutes les infos des conteneurs présentent dans le fichier retour.xml
-	
-		for($i = 0; $i < count($containersIDs); $i++){
+		$nbConteneursTotal = count($containersIDs);
+
+
+		if( $nbConteneursTotal != 0){
+		
+		for($i = 0; $i < $nbConteneursTotal ; $i++){
 			$containersInfoMatrix[$i] = array($containersIDs[$i]->nodeValue,
 							  $containersNames[$i]->nodeValue,
 							  $containersImages[$i]->nodeValue,
 							  $containersStatus[$i]->nodeValue);
 		}
 		}
-		else echo '<script>alert("Pas de conteneurs à afficher !");</script>';
+	//	else echo '<script>alert("Pas de conteneurs à détruire !");</script>';
+
+		}
+		else echo '<script>alert("Fichier retour.xml est vide !");</script>';
 		return $containersInfoMatrix;
 	}
 }
