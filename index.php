@@ -75,8 +75,8 @@ if(!empty($_POST))
 				<option>9</option>
 				<option>10</option>
 			</select>
-			<input type="submit" name="create" value="Créer" id='MyButton'/>
-			<input type="submit" name="destroyall" value="Tout détruire"/>
+			<input type="submit" name="create" value="CREER" class='button button1'/>
+			<input type="submit" name="destroyall" value="TOUT DETERUIRE" class='button button3'/>
 			<table border="1" width="100%">
 				<thead>
 					<th>ID</th>
@@ -109,10 +109,10 @@ if(!empty($_POST))
 					// Les actions qu'on peut effectuer sur nos conteneurs
 					?>
 					<td align='center'>
-					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=start" class="button" onClick='this.disabled = true' >Lancer</a>
-					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=stop" class="button">Arreter</a>
-					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=destroy" class="button">Détruire</a>
-					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=terminal" class="button">Terminal</a>
+					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=start" class="button button1">LANCER</a>
+					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=stop" class="button button2">ARRETER</a>
+					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=destroy" class="button button3">DETRUIRE</a>
+					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=terminal" class="button button5">TERMINAL</a>
 					</td>
 					</tr>
 					<?php
@@ -127,19 +127,84 @@ if(!empty($_POST))
 <style>
 
 .button {
-  font: bold 12px Arial;
+  background-color: #4CAF50; /* Green */
+  border: none;
+  color: white;
+  padding: 7px 14px;
+  text-align: center;
   text-decoration: none;
-  background-color: #EEEEEE;
-  color: #333333;
-  padding: 2px 6px 2px 6px;
-  border-top: 1px solid #CCCCCC;
-  border-right: 1px solid #333333;
-  border-bottom: 1px solid #333333;
-  border-left: 1px solid #CCCCCC;
+  display: inline-block;
+  font-size: 10px;
+  margin: 4px 2px;
+  -webkit-transition-duration: 0.4s; /* Safari */
+  transition-duration: 0.4s;
+  cursor: pointer;
 }
-a:hover { 
-  color: blue;
+
+.button1 {
+  background-color: white; 
+  color: black; 
+  border: 2px solid #4CAF50;
 }
+
+.button1:hover {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.button2 {
+  background-color: white; 
+  color: black; 
+  border: 2px solid #f4a742;
+}
+
+.button2:hover {
+  background-color: #f4a742;
+  color: white;
+}
+
+.button3 {
+  background-color: white; 
+  color: black; 
+  border: 2px solid #f44336;
+}
+
+.button3:hover {
+  background-color: #f44336;
+  color: white;
+}
+
+.button4 {
+  background-color: white;
+  color: black;
+  border: 2px solid #e7e7e7;
+}
+
+.button4:hover {background-color: #e7e7e7;}
+
+.button5 {
+  background-color: white;
+  color: black;
+  border: 2px solid #555555;
+}
+
+.button5:hover {
+  background-color: #555555;
+  color: white;
+}
+table {
+  border-collapse: collapse;
+  width: 60%;
+}
+
+th, td, th {
+  padding: 2px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+tr:hover {background-color:#f5f5f5;}
+
 </style>
 <script>
 
