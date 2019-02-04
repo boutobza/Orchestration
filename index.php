@@ -34,17 +34,14 @@ if(!empty($_POST))
 		$nb = $_POST['nb'];
 		$image = $_POST['image'];
 
-		$controller->createXMLFile('create',$image,$nb);
-		echo '<script>alert("'.$nb.' conteneur(s) '.$image.' crée(s) avec succes !");</script>';
+		shell_exec("/usr/bin/ansible-playbook -i /etc/ansible/hosts /var/www/pageDeGestion/html/createContainer.yml -e 'nb=$nb image=$image'");
 	}
 	elseif(isset($_POST['destroyall']))
 	{
-		$action = $_POST['destroyall'];
-		$controller->createXMLFile('destroyall',0,0);
-		echo '<script>alert("Tout les conteneurs sont détruits");</script>';
+		shell_exec('/usr/bin/ansible-playbook -i /etc/ansible/hosts /var/www/pageDeGestion/html/destroyAllContainers.yml');
 	}
 
-		$controller->sendXMLFile();
+		#$controller->sendXMLFile();
 		header('Location: index.php');
 		exit;
 
@@ -60,7 +57,7 @@ if(!empty($_POST))
 		<form action="index.php" method="post">
 			<select name="image">
 				<option>Ubuntu</option>
-				<option>Debian</option>
+				<option>mydebian</option>
 				<option>CentOS</option>
 			</select>
 			<select name="nb">
