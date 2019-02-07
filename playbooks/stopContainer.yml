@@ -1,0 +1,10 @@
+---
+ 
+- hosts: 192.168.56.101 
+  remote_user: user 
+  tasks:
+          - name: arrêt du conteneur 
+            shell: /home/user/DockerScripts/scriptStopContainer {{ id }}
+            vars:
+                    id: "{{ id }}"
+...

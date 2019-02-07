@@ -1,6 +1,5 @@
 <?php
 include ('Controller.php');
-#quand on a submit quelque chose on prépare notre fichier xml
 
 $controller = new Controller();
 
@@ -10,20 +9,25 @@ $nbConteneursTotal = $controller->getContainersTotalNumber();
 
 if(isset($_GET['action']))
 {
+	$id = $_GET['id'];
 	if(strcmp($_GET['action'], 'start') == 0){
-		$controller->createContainerActionXMLFile('start',$_GET['id']);
+		#$controller->createContainerActionXMLFile('start',$_GET['id']);
+		shell_exec("/usr/bin/ansible-playbook -i /etc/ansible/hosts /var/www/pageDeGestion/html/playbooks/startContainer.yml -e 'id=$id'");
 	}
 	elseif(strcmp($_GET['action'], 'stop') == 0){
-		$controller->createContainerActionXMLFile('stop',$_GET['id']);
+		#$controller->createContainerActionXMLFile('stop',$_GET['id']);
+		shell_exec("/usr/bin/ansible-playbook -i /etc/ansible/hosts /var/www/pageDeGestion/html/playbooks/stopContainer.yml -e 'id=$id'");
 	}
 	elseif(strcmp($_GET['action'], 'destroy') == 0){
-		$controller->createContainerActionXMLFile('destroy',$_GET['id']);
+		#$controller->createContainerActionXMLFile('destroy',$_GET['id']);
+		shell_exec("/usr/bin/ansible-playbook -i /etc/ansible/hosts /var/www/pageDeGestion/html/playbooks/destroyContainer.yml -e 'id=$id'");
 	}
 	elseif(strcmp($_GET['action'], 'terminal') == 0){
-	//	$controller->createContainerActionXMLFile('terminal',$_GET['id']);
+		//	$controller->createContainerActionXMLFile('terminal',$_GET['id']);
 	}
 
-	$controller->sendContainerActionXMLFile();
+	#$controller->sendContainerActionXMLFile();
+	shell_exec("/usr/bin/ansible-playbook -i /etc/ansible/hosts /var/www/pageDeGestion/html/playbooks/getContainersInfo.yml");
 	header('Location: index.php');
 	exit;
 }
@@ -34,16 +38,17 @@ if(!empty($_POST))
 		$nb = $_POST['nb'];
 		$image = $_POST['image'];
 
-		shell_exec("/usr/bin/ansible-playbook -i /etc/ansible/hosts /var/www/pageDeGestion/html/createContainer.yml -e 'nb=$nb image=$image'");
+		shell_exec("/usr/bin/ansible-playbook -i /etc/ansible/hosts /var/www/pageDeGestion/html/playbooks/createContainer.yml -e 'nb=$nb image=$image'");
 	}
 	elseif(isset($_POST['destroyall']))
 	{
-		shell_exec('/usr/bin/ansible-playbook -i /etc/ansible/hosts /var/www/pageDeGestion/html/destroyAllContainers.yml');
+		shell_exec('/usr/bin/ansible-playbook -i /etc/ansible/hosts /var/www/pageDeGestion/html/playbooks/destroyAllContainers.yml');
 	}
 
-		#$controller->sendXMLFile();
-		header('Location: index.php');
-		exit;
+	#$controller->sendXMLFile();
+	shell_exec("/usr/bin/ansible-playbook -i /etc/ansible/hosts /var/www/pageDeGestion/html/playbooks/getContainersInfo.yml");
+	header('Location: index.php');
+	exit;
 
 }
 ?>
@@ -83,28 +88,28 @@ if(!empty($_POST))
 					<th>ACTIONS</th>
 				</thead>
 				<tbody>
-					<?php
-				//ici $i represente le nb de conteneurs qui sont creer il va etre recuperer depuis le fichier retour.xml pour des raisons de test j'ai mis un seul conten					eur pour tester
-						if(!empty($containersInfoMatrix[0][0])){
-					for($i = 0; $i < $nbConteneursTotal ; $i++){
-					?>
+<?php
+//ici $i represente le nb de conteneurs qui sont creer il va etre recuperer depuis le fichier retour.xml pour des raisons de test j'ai mis un seul conten					eur pour tester
+if(!empty($containersInfoMatrix[0][0])){
+	for($i = 0; $i < $nbConteneursTotal ; $i++){
+?>
 					<tr>
 <?php
-						/* var $j nb info qu'on va afficher ici on a 4 ID, NOM, IMAGE, ETAT
-						* encore le prob de l'affichge existe parce que le tableau se charge avant que les infos 
-						* des conteneurs soit recuperer du fichier retour.xml
-						 */
-					for($j = 0; $j < 4; $j++){
-					?>
+		/* var $j nb info qu'on va afficher ici on a 4 ID, NOM, IMAGE, ETAT
+		 * encore le prob de l'affichge existe parce que le tableau se charge avant que les infos 
+		 * des conteneurs soit recuperer du fichier retour.xml
+		 */
+		for($j = 0; $j < 4; $j++){
+?>
 					<td align='center'>
 <?php
-					echo $containersInfoMatrix[$i][$j];
-					?>
+			echo $containersInfoMatrix[$i][$j];
+?>
 					</td>
-					<?php
-					}
-					// Les actions qu'on peut effectuer sur nos conteneurs
-					?>
+<?php
+		}
+		// Les actions qu'on peut effectuer sur nos conteneurs
+?>
 					<td align='center'>
 					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=start" class="button button1">LANCER</a>
 					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=stop" class="button button2">ARRETER</a>
@@ -112,9 +117,9 @@ if(!empty($_POST))
 					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=terminal" class="button button5">TERMINAL</a>
 					</td>
 					</tr>
-					<?php
-					}}
-					?>
+<?php
+	}}
+?>
 				</tbody>
 			</table>
 		</form>
@@ -203,12 +208,12 @@ th, td, th {
 tr:hover {background-color:#f5f5f5;}
 
 </style>
-<script>
+		<script>
 
 
 
 
-</script>
+		</script>
 	</body>
 </html>
 

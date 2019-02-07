@@ -1,0 +1,10 @@
+---
+ 
+- hosts: 192.168.56.101 
+  remote_user: user 
+  tasks:
+          - name: suppression du conteneur 
+            shell: /home/user/DockerScripts/scriptDestroyContainer {{ id }}
+            vars:
+                    id: "{{ id }}"
+...
