@@ -7,27 +7,38 @@ $containersInfoMatrix = $controller->displayContainersInfo();
 
 $nbConteneursTotal = $controller->getContainersTotalNumber();
 
+$host    = "localhost";
+$port    = 12800;
+
 if(isset($_GET['action']))
 {
 	$id = $_GET['id'];
 	if(strcmp($_GET['action'], 'start') == 0){
-		#$controller->createContainerActionXMLFile('start',$_GET['id']);
-		shell_exec("/usr/bin/ansible-playbook -i /etc/ansible/hosts /var/www/pageDeGestion/html/playbooks/startContainer.yml -e 'id=$id'");
+		$message = array("start", $id);
 	}
 	elseif(strcmp($_GET['action'], 'stop') == 0){
-		#$controller->createContainerActionXMLFile('stop',$_GET['id']);
-		shell_exec("/usr/bin/ansible-playbook -i /etc/ansible/hosts /var/www/pageDeGestion/html/playbooks/stopContainer.yml -e 'id=$id'");
+		$message = array("stop", $id);
 	}
 	elseif(strcmp($_GET['action'], 'destroy') == 0){
-		#$controller->createContainerActionXMLFile('destroy',$_GET['id']);
-		shell_exec("/usr/bin/ansible-playbook -i /etc/ansible/hosts /var/www/pageDeGestion/html/playbooks/destroyContainer.yml -e 'id=$id'");
+		$message = array("destroy", $id);
 	}
 	elseif(strcmp($_GET['action'], 'terminal') == 0){
 		//	$controller->createContainerActionXMLFile('terminal',$_GET['id']);
 	}
 
-	#$controller->sendContainerActionXMLFile();
-	shell_exec("/usr/bin/ansible-playbook -i /etc/ansible/hosts /var/www/pageDeGestion/html/playbooks/getContainersInfo.yml");
+	// on encode le message en json pour pouvoir l'envoyer
+	$message = json_encode($message);
+	// create socket
+	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP) or die("Could not create socket\n");
+	// connect to server python
+	$result = socket_connect($socket, $host, $port) or die("Could not connect to server\n");
+	// send string to server
+	socket_write($socket, $message, strlen($message)) or die("Could not send data to server\n");
+	// next instruction supposed to wait message from server python
+	socket_recv($socket, $message, 1024, MSG_WAITALL)or die ("Could not receive from server python");
+	// close socket
+	socket_close($socket);
+
 	header('Location: index.php');
 	exit;
 }
@@ -37,16 +48,26 @@ if(!empty($_POST))
 	{
 		$nb = $_POST['nb'];
 		$image = $_POST['image'];
-
-		shell_exec("/usr/bin/ansible-playbook -i /etc/ansible/hosts /var/www/pageDeGestion/html/playbooks/createContainer.yml -e 'nb=$nb image=$image'");
+		$message = array("create", $nb, $image);
 	}
 	elseif(isset($_POST['destroyall']))
 	{
-		shell_exec('/usr/bin/ansible-playbook -i /etc/ansible/hosts /var/www/pageDeGestion/html/playbooks/destroyAllContainers.yml');
+		$message = array("destroyall");
 	}
 
-	#$controller->sendXMLFile();
-	shell_exec("/usr/bin/ansible-playbook -i /etc/ansible/hosts /var/www/pageDeGestion/html/playbooks/getContainersInfo.yml");
+	// on encode le message en json pour pouvoir l'envoyer
+	$message = json_encode($message);
+	// create socket
+	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP) or die("Could not create socket\n");
+	// connect to server python
+	$result = socket_connect($socket, $host, $port) or die("Could not connect to server\n");
+	// send message to server
+	socket_write($socket, $message, strlen($message)) or die("Could not send data to server\n");
+	// next instruction supposed to wait message from server python
+	socket_recv($socket, $buffer, 1024, MSG_WAITALL)or die ("Could not receive from server python");
+	// close socket
+	socket_close($socket);
+
 	header('Location: index.php');
 	exit;
 

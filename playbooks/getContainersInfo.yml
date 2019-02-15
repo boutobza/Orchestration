@@ -5,13 +5,14 @@
   tasks:
           - name: lancement du script de création du fichier qui regroupe les infos des conteneurs 
             shell: python3 /home/user/DockerScripts/scriptCreateXML.py 
+            #on enregistre le resultat de la commande dans une variable
+            register: resultat
+          - set_fact:
+                  #on garde uniquement ce qui a été print
+                  sortie: "{{ resultat.stdout }}"
 
 - hosts: 192.168.56.102 
   remote_user: user 
   tasks:
-          - name: Transfert du fichier retour.xml de la machine Docker vers le Frontal 
-            synchronize:
-                    src: /home/user/DockerScripts/retour.xml
-                    dest: /var/www/pageDeGestion/html/user
-            delegate_to: 192.168.56.101
+          - local_action: copy content={{ hostvars['192.168.56.101']['sortie'] }} dest=/var/www/pageDeGestion/html/user/retour.xml
 ...
