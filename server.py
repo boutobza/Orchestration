@@ -4,17 +4,33 @@ import socket
 import subprocess
 import time
 import json
+import signal
+import sys
+
+def signal_handler(sig, frame):
+    print("You pressed Ctrl+C")
+    print("Fermeture de la connexion")
+    connexion_principale.close()
+    sys.exit(0)
 
 hote = ''
 port = 12800
 
 connexion_principale = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+# la ligne suivante est censée éviter l'erreur --> "Address already in use" quand on stop
+# le programme avec Ctrl+C et qu'on relance juste après
+connexion_principale.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
 connexion_principale.bind((hote, port))
 connexion_principale.listen(5)
 print("Le serveur écoute à présent sur le port {}".format(port))
 
-while 1:
+# la ligne suivante est censée fermer proprement la connexion quand le programme reçoit
+# le signal SIGINT, dans la pratique ça ne résout pas le problème de "Adress already in use"
+signal.signal(signal.SIGINT, signal_handler)
 
+while 1:
     connexion_avec_client, infos_connexion = connexion_principale.accept()
     msg_recu = connexion_avec_client.recv(1024)
     print("",msg_recu)
@@ -66,8 +82,8 @@ while 1:
         "/var/www/pageDeGestion/html/playbooks/getContainersInfo.yml"])
     #on attend que la commande p se finisse au cas ou ^^
     p.communicate()
-    #la commande suivante envoie ok (peut importe ce que l'on envoie)  à la page php qui est normalement en train d'attendre
-    connexion_avec_client.send("ok")
+    #la commande suivante envoie ok (peu importe ce que l'on envoie)  à la page php qui est normalement en train d'attendre
+    connexion_avec_client.send(b"ok")
     print("FIN commandes Ansible")
     connexion_avec_client.close()
 print("Fermeture de la connexion")
