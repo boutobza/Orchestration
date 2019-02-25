@@ -1,7 +1,13 @@
 <?php
-include('Net/SSH2.php');
-include('Net/SCP.php');
 class Controller{
+
+	public function getImagesList(){
+		$images_list = file_get_contents('/var/www/pageDeGestion/html/user/images_list');
+		# images_list est un string dont chaque valeur est délimitée par ',' 
+		# on le transforme en array en précisant ',' comme délimiteur
+		$images_list = explode(',', $images_list);
+		return $images_list;
+	}
 
 
 	public function getContainersTotalNumber() {

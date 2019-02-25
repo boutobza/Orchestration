@@ -1,0 +1,18 @@
+---
+ 
+- hosts: 192.168.56.101 
+  remote_user: user 
+  tasks:
+          - name: récupération de la liste des images 
+            shell: /home/user/DockerScripts/scriptGetImagesList 
+            #on enregistre le resultat de la commande dans une variable
+            register: resultat
+          - set_fact:
+                  #on garde uniquement ce qui a été print
+                  sortie: "{{ resultat.stdout }}"
+
+- hosts: 192.168.56.102 
+  remote_user: user 
+  tasks:
+          - local_action: copy content={{ hostvars['192.168.56.101']['sortie'] }} dest=/var/www/pageDeGestion/html/user/images_list
+...

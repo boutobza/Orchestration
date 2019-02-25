@@ -7,6 +7,9 @@ $containersInfoMatrix = $controller->displayContainersInfo();
 
 $nbConteneursTotal = $controller->getContainersTotalNumber();
 
+#images_list est un tableau qui contient toutes les images docker
+$images_list = $controller->getImagesList();
+
 $host    = "localhost";
 $port    = 12800;
 
@@ -82,9 +85,14 @@ if(!empty($_POST))
 	<body>
 		<form action="index.php" method="post">
 			<select name="image">
-				<option>Ubuntu</option>
-				<option>mydebian</option>
-				<option>CentOS</option>
+			<?php
+			
+				foreach($images_list as $image){
+			?>
+					<option><?php echo $image;?></option>
+			<?php
+				}
+			?>
 			</select>
 			<select name="nb">
 				<option>1</option>
