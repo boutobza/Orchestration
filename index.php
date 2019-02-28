@@ -34,7 +34,6 @@ if(isset($_GET['action']) or (!empty($_POST))){
 
 	elseif(!empty($_POST))
 	{
-
 		if(isset($_POST['create']))
 		{
 			$nb = $_POST['nb'];
@@ -47,16 +46,15 @@ if(isset($_GET['action']) or (!empty($_POST))){
 		}
 		elseif(isset($_POST['upload']))
 		{
-			$target_dir = "/var/www/pageDeGestion/html/uploads/";
-	                $fileNameToUpload = basename($_FILES["dockerFileToUpload"]["name"]);
-	                $target_file = $target_dir . basename($_FILES["dockerFileToUpload"]["name"]);
-			$tmp_target_file = $_FILES["dockerFileToUpload"]["tmp_name"];
-
 			$imgTag = $_POST['imgName'];
+			
+			$target_dir = "/var/www/pageDeGestion/html/uploads/";
+			$dockerfileToUpload = basename($_FILES["dockerfileToUpload"]["name"]);
+			$target_file = $target_dir .$dockerfileToUpload;
+			$tmp_file = $_FILES["dockerfileToUpload"]["tmp_name"];
 
-			$controller->uploadDockerfile($target_dir, $fileNameToUpload, $target_file, $tmp_target_file);
-			$message = array("buildImg", $fileNameToUpload, $imgTag);
-
+			$controller->uploadDockerfile($dockerfileToUpload, $target_file, $tmp_file);
+			$message = array("buildImg", $dockerfileToUpload, $imgTag);
 		}
 	}
 
@@ -72,6 +70,7 @@ if(isset($_GET['action']) or (!empty($_POST))){
 	socket_recv($socket, $message, 1024, MSG_WAITALL)or die ("Could not receive from server python");
 	// close socket
 	socket_close($socket);
+	
 
 	header('Location: index.php');
 	exit;
@@ -85,22 +84,39 @@ if(isset($_GET['action']) or (!empty($_POST))){
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
 	<body>
-		<form enctype="multipart/form-data" action="index.php" method="post">
-
-		<fieldset>
-			<legend>Création Images</legend>
-			<label for="dockerfile">Choisir le fichier Dockerfile : </label> <br/>
-			<input name="dockerFileToUpload" type="file" id="dockerfile"> <br/>
-			<label for="imgName">Saisir le nom de l'image (tag) : </label> <br/>
-			<input name="imgName" type="text" id="imgName"> <br/><br/>
-			<input type="submit" id="upload" name="upload" value="CREER IMAGE" class="button button1">
-		</fieldset>
-		<fieldset>
-			<legend>Gestion Conteneurs</legend>
+		<form action="index.php" method="post" enctype="multipart/form-data">
+			<fieldset>
+				<legend>Création Image</legend>
+				<label for="dockerfile">Choisir le fichier Dockerfile : </label><br>
+				<input type="file" name="dockerfileToUpload" id="dockerfile"><br>
+				<label for="imgName">Saisir le nom de l'image (tag) : </label><br>
+				<input type="text" name="imgName" id="imgName"><br><br>
+				<input type="submit" name="upload" value="CREER IMAGE" class="button button1">
+			</fieldset>
+			<fieldset>
+				<legend>Gestion&Info Conteneurs</legend>
 			<select name="image">
 			<?php
 			
-				foreach($images_list as $image){
+				if ($uploadOk == 0) {
+    echo "Sorry, your file was not uploaded.";
+// if everything is ok, try to upload file
+} else {
+    if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
+        echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.";
+    } else {
+        echo "Sorry, there was an error uploading your file.";
+    }
+if ($uploadOk == 0) {
+    echo "Sorry, your file was not uploaded.";
+// if everything is ok, try to upload file
+} else {
+    if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
+        echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.";
+    } else {
+        echo "Sorry, there was an error uploading your file.";
+    }
+}}foreach($images_list as $image){
 			?>
 					<option><?php echo $image;?></option>
 			<?php
@@ -121,9 +137,6 @@ if(isset($_GET['action']) or (!empty($_POST))){
 			</select>
 			<input type="submit" name="create" value="CREER" class='button button1'/>
 			<input type="submit" name="destroyall" value="TOUT DETERUIRE" class='button button3'/>
-		</fieldset>
-		<fieldset>
-			<legend>Informations Conteneurs</legend>
 			<table border="1" width="100%">
 				<thead>
 					<th>ID</th>

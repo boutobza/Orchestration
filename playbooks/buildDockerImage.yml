@@ -1,15 +1,15 @@
 ---
 
+
 - hosts: 192.168.56.101
   remote_user: user
   vars:
-          file_name: "{{ file_name }}"
-          image_tag: "{{ image_tag }}"
+        file_name: "{{ file_name }}"
+        image_tag: "{{ image_tag }}"
   tasks:
-          - name: Envoi du fichier Dockerfile televersé de frontalServer vers dockerEngine
-            copy:
-                    src: /var/www/pageDeGestion/html/uploads/{{ file_name }}
-                    dest: /home/user/DockerScripts/mydockerbuild/{{ file_name }}
-
-          - name: Lancement du processus de la creation d'image
-            command: docker build -t {{ image_tag }} DockerScripts/mydockerbuild/
+        - name: Envoi du fichier Dockerfile de FronalServer vers DockerEngine
+          copy:
+                  src: /var/www/pageDeGestion/html/uploads/{{ file_name}}
+                  dest: /home/user/DockerScripts/mydockerbuild/{{ file_name}}
+        - name: Lancement du processus de creation de l'image docker
+          command: docker build -t {{ image_tag }} DockerScripts/mydockerbuild/

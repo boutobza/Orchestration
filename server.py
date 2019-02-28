@@ -72,7 +72,15 @@ while 1:
             "/var/www/pageDeGestion/html/playbooks/destroyContainer.yml",
             "-e",
             "id={0}".format(data[1])])
-
+    elif data[0] == "buildImg":
+        c = subprocess.Popen(["/usr/bin/ansible-playbook",
+            "-i",
+            "/etc/ansible/hosts",
+            "/var/www/pageDeGestion/html/playbooks/buildDockerImage.yml",
+            "-e",
+            "file_name={0}".format(data[1]),
+            "-e",
+            "image_tag={0}".format(data[2])])
     #on attend que la commande c ansible se termine
     c.communicate()
     #la commande suivante recupère les infos des conteneurs
