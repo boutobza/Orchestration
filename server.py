@@ -31,6 +31,7 @@ print("Le serveur écoute à présent sur le port {}".format(port))
 signal.signal(signal.SIGINT, signal_handler)
 
 while 1:
+    getContainersInfo = True
     connexion_avec_client, infos_connexion = connexion_principale.accept()
     msg_recu = connexion_avec_client.recv(1024)
     print("",msg_recu)
@@ -73,6 +74,7 @@ while 1:
             "-e",
             "id={0}".format(data[1])])
     elif data[0] == "buildImg":
+        getContainersInfo = False
         c = subprocess.Popen(["/usr/bin/ansible-playbook",
             "-i",
             "/etc/ansible/hosts",
@@ -81,15 +83,24 @@ while 1:
             "file_name={0}".format(data[1]),
             "-e",
             "image_tag={0}".format(data[2])])
+        c.communicate()
+
+        cmd_recup_img_list = subprocess.Popen(["/usr/bin/ansible-playbook",
+            "-i",
+            "/etc/ansible/hosts",
+            "/var/www/pageDeGestion/html/playbooks/getImagesList.yml"])
+        cmd_recup_img_list.communicate()
+
     #on attend que la commande c ansible se termine
     c.communicate()
     #la commande suivante recupère les infos des conteneurs
-    p = subprocess.Popen(["/usr/bin/ansible-playbook",
-        "-i",
-        "/etc/ansible/hosts",
-        "/var/www/pageDeGestion/html/playbooks/getContainersInfo.yml"])
+    if getContainersInfo == True:
+        p = subprocess.Popen(["/usr/bin/ansible-playbook",
+            "-i",
+            "/etc/ansible/hosts",
+            "/var/www/pageDeGestion/html/playbooks/getContainersInfo.yml"])
     #on attend que la commande p se finisse au cas ou ^^
-    p.communicate()
+        p.communicate()
     #la commande suivante envoie ok (peu importe ce que l'on envoie)  à la page php qui est normalement en train d'attendre
     connexion_avec_client.send(b"ok")
     print("FIN commandes Ansible")
