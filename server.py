@@ -32,6 +32,8 @@ signal.signal(signal.SIGINT, signal_handler)
 
 while 1:
     getContainersInfo = True
+    getImagesList = False
+
     connexion_avec_client, infos_connexion = connexion_principale.accept()
     msg_recu = connexion_avec_client.recv(1024)
     print("",msg_recu)
@@ -75,6 +77,8 @@ while 1:
             "id={0}".format(data[1])])
     elif data[0] == "buildImg":
         getContainersInfo = False
+        getImagesList = True
+
         c = subprocess.Popen(["/usr/bin/ansible-playbook",
             "-i",
             "/etc/ansible/hosts",
@@ -90,16 +94,27 @@ while 1:
             "/var/www/pageDeGestion/html/playbooks/startSelection.yml",
             "-e",
             "selection={0}".format(data[1])])
-    c.communicate()
+    elif data[0] == "delete_img":
+        getContainersInfo = False
+        getImagesList = True
 
-    cmd_recup_img_list = subprocess.Popen(["/usr/bin/ansible-playbook",
-        "-i",
-        "/etc/ansible/hosts",
-        "/var/www/pageDeGestion/html/playbooks/getImagesList.yml"])
-    cmd_recup_img_list.communicate()
+        c = subprocess.Popen(["/usr/bin/ansible-playbook",
+            "-i",
+            "/etc/ansible/hosts",
+            "/var/www/pageDeGestion/html/playbooks/deleteImage.yml",
+            "-e",
+            "image_name={0}".format(data[1])])
+
 
     #on attend que la commande c ansible se termine
     c.communicate()
+
+    if getImagesList == True:
+        cmd_recup_img_list = subprocess.Popen(["/usr/bin/ansible-playbook",
+            "-i",
+            "/etc/ansible/hosts",
+            "/var/www/pageDeGestion/html/playbooks/getImagesList.yml"])
+        cmd_recup_img_list.communicate()
     #la commande suivante recupère les infos des conteneurs
     if getContainersInfo == True:
         p = subprocess.Popen(["/usr/bin/ansible-playbook",

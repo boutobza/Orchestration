@@ -71,6 +71,11 @@ if(isset($_GET['action']) or (!empty($_POST))){
 			#on ajoute containers_list dans la deuxième case de notre tableau $message
 			array_push($message, $containers_list);
 		}
+		elseif(isset($_POST['delete_img']))
+		{
+			$imgName = $_POST['image'];
+			$message = array("delete_img", $imgName);
+		}
 	}
 
 	$controller->socketHandler($message);	
@@ -94,32 +99,13 @@ if(isset($_GET['action']) or (!empty($_POST))){
 				<input type="file" name="dockerfileToUpload" id="dockerfile"><br>
 				<label for="imgName">Saisir le nom de l'image (tag) : </label><br>
 				<input type="text" name="imgName" id="imgName"><br><br>
-				<input type="submit" name="upload" value="CREER IMAGE" class="button button1">
+				<input type="submit" name="upload" value="CRÉER IMAGE" class="button button1">
 			</fieldset>
 			<fieldset>
 				<legend>Gestion&Info Conteneurs</legend>
 			<select name="image">
 			<?php
-			
-				if ($uploadOk == 0) {
-    echo "Sorry, your file was not uploaded.";
-// if everything is ok, try to upload file
-} else {
-    if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
-        echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.";
-    } else {
-        echo "Sorry, there was an error uploading your file.";
-    }
-if ($uploadOk == 0) {
-    echo "Sorry, your file was not uploaded.";
-// if everything is ok, try to upload file
-} else {
-    if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
-        echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.";
-    } else {
-        echo "Sorry, there was an error uploading your file.";
-    }
-}}foreach($images_list as $image){
+				foreach($images_list as $image){
 			?>
 					<option><?php echo $image;?></option>
 			<?php
@@ -138,9 +124,10 @@ if ($uploadOk == 0) {
 				<option>9</option>
 				<option>10</option>
 			</select>
-			<input type="submit" name="create" value="CREER" class='button button1'/>
-			<input type="submit" name="destroyall" value="TOUT DETERUIRE" class='button button3'/>
-			<input type="submit" name="start_selection" value="LANCER SÉLÉCTION" class='button button1'/>
+			<input type="submit" name="create" value="CRÉER" class='button button1'/>
+			<input type="submit" name="destroyall" value="TOUT DÉTERUIRE" class='button button3'/>
+			<input type="submit" name="start_selection" value="LANCER SÉLÉCTION" class='button button1'/><br>
+			<input type="submit" name="delete_img" value="SUPPRIMER IMAGE" class='button button3'/>
 			<table border="1" width="100%">
 				<thead>
 					<th>ID</th>

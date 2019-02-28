@@ -1,0 +1,12 @@
+---
+
+- hosts: 192.168.56.101
+  remote_user: user
+  vars:
+          image_name: "{{ image_name }}"
+  tasks:
+          - name: Supperession de l'image sélectionnée en cours
+            shell: /home/user/DockerScripts/scriptDeleteImage {{ image_name }}
+
+
+
