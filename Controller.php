@@ -9,6 +9,30 @@ class Controller{
 		return $images_list;
 	}
 
+	public function uploadDockerfile($target_dir, $fileNameToUpload, $target_file, $tmp_target_file){
+		# var de test pour le moment n'est pas vraiment utilisée
+		$uploadOk = 1;
+
+		if ($uploadOk == 0)
+	       	{
+      			echo "Sorry, your file was not uploaded.";
+  		// if everything is ok, try to upload file
+ 		}
+		else
+		{
+			if (move_uploaded_file($tmp_target_file, $target_file))
+			{
+				echo "<p>The file ".$fileNameToUpload." has been uploaded.</p>";
+			} 
+			else
+		       	{
+				echo "Sorry, there was an error uploading your file.";
+     		 	}	
+ 		 }
+
+	
+	}
+
 
 	public function getContainersTotalNumber() {
 		$xml = new DOMDocument("1.0", "UTF-8");
@@ -24,7 +48,7 @@ class Controller{
 		return $nbConteneursTotal;
 	}
 
-	function displayContainersInfo () : array {
+	public function displayContainersInfo () : array {
 		
 		$xml = new DOMDocument("1.0", "UTF-8");
 		$xml->formatOutput = true;

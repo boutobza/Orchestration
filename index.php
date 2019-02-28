@@ -34,6 +34,7 @@ if(isset($_GET['action']) or (!empty($_POST))){
 
 	elseif(!empty($_POST))
 	{
+
 		if(isset($_POST['create']))
 		{
 			$nb = $_POST['nb'];
@@ -43,6 +44,19 @@ if(isset($_GET['action']) or (!empty($_POST))){
 		elseif(isset($_POST['destroyall']))
 		{
 			$message = array("destroyall");
+		}
+		elseif(isset($_POST['upload']))
+		{
+			$target_dir = "/var/www/pageDeGestion/html/uploads/";
+	                $fileNameToUpload = basename($_FILES["dockerFileToUpload"]["name"]);
+	                $target_file = $target_dir . basename($_FILES["dockerFileToUpload"]["name"]);
+			$tmp_target_file = $_FILES["dockerFileToUpload"]["tmp_name"];
+
+			$imgTag = $_POST['imgName'];
+
+			$controller->uploadDockerfile($target_dir, $fileNameToUpload, $target_file, $tmp_target_file);
+			$message = array("buildImg", $fileNameToUpload, $imgTag);
+
 		}
 	}
 
@@ -71,7 +85,18 @@ if(isset($_GET['action']) or (!empty($_POST))){
 		<link rel="stylesheet" type="text/css" href="style.css">
 	</head>
 	<body>
-		<form action="index.php" method="post">
+		<form enctype="multipart/form-data" action="index.php" method="post">
+
+		<fieldset>
+			<legend>Création Images</legend>
+			<label for="dockerfile">Choisir le fichier Dockerfile : </label> <br/>
+			<input name="dockerFileToUpload" type="file" id="dockerfile"> <br/>
+			<label for="imgName">Saisir le nom de l'image (tag) : </label> <br/>
+			<input name="imgName" type="text" id="imgName"> <br/><br/>
+			<input type="submit" id="upload" name="upload" value="CREER IMAGE" class="button button1">
+		</fieldset>
+		<fieldset>
+			<legend>Gestion Conteneurs</legend>
 			<select name="image">
 			<?php
 			
@@ -96,6 +121,9 @@ if(isset($_GET['action']) or (!empty($_POST))){
 			</select>
 			<input type="submit" name="create" value="CREER" class='button button1'/>
 			<input type="submit" name="destroyall" value="TOUT DETERUIRE" class='button button3'/>
+		</fieldset>
+		<fieldset>
+			<legend>Informations Conteneurs</legend>
 			<table border="1" width="100%">
 				<thead>
 					<th>ID</th>
@@ -140,6 +168,7 @@ if(!empty($containersInfoMatrix[0][0])){
 ?>
 				</tbody>
 			</table>
+</fieldset>
 		</form>
 	</body>
 </html>
