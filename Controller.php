@@ -1,6 +1,25 @@
 <?php
 class Controller{
 
+	public function socketHandler($msg){
+		$host = "localhost";
+		$port = 12800;
+
+		// on encode le message en json pour pouvoir l'envoyer
+	        $message = json_encode($msg);
+        	// create socket
+        	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP) or die("Could not create socket\n");
+        	// connect to server python
+        	$result = socket_connect($socket, $host, $port) or die("Could not connect to server\n");
+        	// send string to server
+        	socket_write($socket, $message, strlen($message)) or die("Could not send data to server\n");
+        	// next instruction supposed to wait message from server python
+        	socket_recv($socket, $message, 1024, MSG_WAITALL)or die ("Could not receive from server python");
+        	// close socket
+        	socket_close($socket);
+
+	}
+
 	public function getImagesList(){
 		$images_list = file_get_contents('/var/www/pageDeGestion/html/user/images_list');
 		# images_list est un string dont chaque valeur est délimitée par ',' 
@@ -39,7 +58,7 @@ class Controller{
 		return $nbConteneursTotal;
 	}
 
-	function displayContainersInfo () : array {
+	public function displayContainersInfo () : array {
 		
 		$xml = new DOMDocument("1.0", "UTF-8");
 		$xml->formatOutput = true;

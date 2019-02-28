@@ -10,8 +10,6 @@ $nbConteneursTotal = $controller->getContainersTotalNumber();
 #images_list est un tableau qui contient toutes les images docker
 $images_list = $controller->getImagesList();
 
-$host    = "localhost";
-$port    = 12800;
 
 if(isset($_GET['action']) or (!empty($_POST))){
 
@@ -75,19 +73,7 @@ if(isset($_GET['action']) or (!empty($_POST))){
 		}
 	}
 
-	// on encode le message en json pour pouvoir l'envoyer
-	$message = json_encode($message);
-	// create socket
-	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP) or die("Could not create socket\n");
-	// connect to server python
-	$result = socket_connect($socket, $host, $port) or die("Could not connect to server\n");
-	// send string to server
-	socket_write($socket, $message, strlen($message)) or die("Could not send data to server\n");
-	// next instruction supposed to wait message from server python
-	socket_recv($socket, $message, 1024, MSG_WAITALL)or die ("Could not receive from server python");
-	// close socket
-	socket_close($socket);
-	
+	$controller->socketHandler($message);	
 
 	header('Location: index.php');
 	exit;
