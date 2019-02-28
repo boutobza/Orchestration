@@ -56,6 +56,23 @@ if(isset($_GET['action']) or (!empty($_POST))){
 			$controller->uploadDockerfile($dockerfileToUpload, $target_file, $tmp_file);
 			$message = array("buildImg", $dockerfileToUpload, $imgTag);
 		}
+		elseif(isset($_POST['start_selection']))
+		{
+			$message = array("start_selection");
+			$containers_list = '"';
+
+			# on veut remplir containers_list avec tous les id des conteneurs qui ont été séléctionnés
+			# pour la suite du processus avec ansible il faut que la liste commence et finisse par '"'	
+			foreach($_POST['list_selected_id'] as $selected){
+				$containers_list.=" ".$selected;
+			}
+
+			# on ajoute à la fin de la liste '"'
+			$containers_list.='"';
+
+			#on ajoute containers_list dans la deuxième case de notre tableau $message
+			array_push($message, $containers_list);
+		}
 	}
 
 	// on encode le message en json pour pouvoir l'envoyer
@@ -137,6 +154,7 @@ if ($uploadOk == 0) {
 			</select>
 			<input type="submit" name="create" value="CREER" class='button button1'/>
 			<input type="submit" name="destroyall" value="TOUT DETERUIRE" class='button button3'/>
+			<input type="submit" name="start_selection" value="LANCER SÉLÉCTION" class='button button1'/>
 			<table border="1" width="100%">
 				<thead>
 					<th>ID</th>
@@ -144,6 +162,7 @@ if ($uploadOk == 0) {
 					<th>IMAGE</th>
 					<th>ETAT</th>
 					<th>ACTIONS</th>
+					<th>SELECTION</th>
 				</thead>
 				<tbody>
 <?php
@@ -173,6 +192,9 @@ if(!empty($containersInfoMatrix[0][0])){
 					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=stop" class="button button2">ARRETER</a>
 					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=destroy" class="button button3">DETRUIRE</a>
 					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=terminal" class="button button5">TERMINAL</a>
+					</td>
+					<td>
+						<input type="checkbox" name="list_selected_id[]" value=<?php echo $containersInfoMatrix[$i][0]?>>
 					</td>
 					</tr>
 <?php
