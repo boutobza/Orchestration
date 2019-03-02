@@ -71,6 +71,40 @@ if(isset($_GET['action']) or (!empty($_POST))){
 			#on ajoute containers_list dans la deuxième case de notre tableau $message
 			array_push($message, $containers_list);
 		}
+		elseif(isset($_POST['stop_selection']))
+		{
+			$message = array("stop_selection");
+			$containers_list = '"';
+
+			# on veut remplir containers_list avec tous les id des conteneurs qui ont été séléctionnés
+			# pour la suite du processus avec ansible il faut que la liste commence et finisse par '"'	
+			foreach($_POST['list_selected_id'] as $selected){
+				$containers_list.=" ".$selected;
+			}
+
+			# on ajoute à la fin de la liste '"'
+			$containers_list.='"';
+
+			#on ajoute containers_list dans la deuxième case de notre tableau $message
+			array_push($message, $containers_list);
+		}
+		elseif(isset($_POST['destroy_selection']))
+		{
+			$message = array("destroy_selection");
+			$containers_list = '"';
+
+			# on veut remplir containers_list avec tous les id des conteneurs qui ont été séléctionnés
+			# pour la suite du processus avec ansible il faut que la liste commence et finisse par '"'	
+			foreach($_POST['list_selected_id'] as $selected){
+				$containers_list.=" ".$selected;
+			}
+
+			# on ajoute à la fin de la liste '"'
+			$containers_list.='"';
+
+			#on ajoute containers_list dans la deuxième case de notre tableau $message
+			array_push($message, $containers_list);
+		}
 		elseif(isset($_POST['delete_img']))
 		{
 			$imgName = $_POST['image'];
@@ -125,8 +159,10 @@ if(isset($_GET['action']) or (!empty($_POST))){
 				<option>10</option>
 			</select>
 			<input type="submit" name="create" value="CRÉER" class='button button1'/>
-			<input type="submit" name="destroyall" value="TOUT DÉTERUIRE" class='button button3'/>
-			<input type="submit" name="start_selection" value="LANCER SÉLÉCTION" class='button button1'/><br>
+			<input type="submit" name="destroyall" value="TOUT DÉTERUIRE" class='button button3'/><br>
+			<input type="submit" name="start_selection" value="LANCER SÉLÉCTION" class='button button1'/>
+			<input type="submit" name="stop_selection" value="ARRÊTER SÉLÉCTION" class='button button2'/>
+			<input type="submit" name="destroy_selection" value="DÉTRUIRE SÉLÉCTION" class='button button3'/><br>
 			<input type="submit" name="delete_img" value="SUPPRIMER IMAGE" class='button button3'/>
 			<table border="1" width="100%">
 				<thead>

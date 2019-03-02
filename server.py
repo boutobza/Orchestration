@@ -94,6 +94,20 @@ while 1:
             "/var/www/pageDeGestion/html/playbooks/startSelection.yml",
             "-e",
             "selection={0}".format(data[1])])
+    elif data[0] == "stop_selection":
+        c = subprocess.Popen(["/usr/bin/ansible-playbook",
+            "-i",
+            "/etc/ansible/hosts",
+            "/var/www/pageDeGestion/html/playbooks/stopSelection.yml",
+            "-e",
+            "selection={0}".format(data[1])])
+    elif data[0] == "destroy_selection":
+        c = subprocess.Popen(["/usr/bin/ansible-playbook",
+            "-i",
+            "/etc/ansible/hosts",
+            "/var/www/pageDeGestion/html/playbooks/destroySelection.yml",
+            "-e",
+            "selection={0}".format(data[1])])
     elif data[0] == "delete_img":
         getContainersInfo = False
         getImagesList = True
