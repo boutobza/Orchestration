@@ -170,6 +170,7 @@ if(isset($_GET['action']) or (!empty($_POST))){
 					<th>NOM</th>
 					<th>IMAGE</th>
 					<th>ETAT</th>
+					<th>IP</th>
 					<th>ACTIONS</th>
 					<th>SELECTION</th>
 				</thead>
@@ -185,7 +186,7 @@ if(!empty($containersInfoMatrix[0][0])){
 		 * encore le prob de l'affichge existe parce que le tableau se charge avant que les infos 
 		 * des conteneurs soit recuperer du fichier retour.xml
 		 */
-		for($j = 0; $j < 4; $j++){
+		for($j = 0; $j < 5; $j++){
 ?>
 					<td align='center'>
 <?php

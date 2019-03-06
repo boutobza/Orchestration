@@ -80,6 +80,9 @@ class Controller{
 		// recupere tout les etats des conteneurs crees
 		$containersStatus= $xml->getElementsByTagName('status');
 
+		// recupere les ip des conteneurs
+		$containersIP= $xml->getElementsByTagName('ip');
+
 		$nbConteneursTotal = count($containersIDs);
 
 
@@ -89,7 +92,8 @@ class Controller{
 			$containersInfoMatrix[$i] = array($containersIDs[$i]->nodeValue,
 							  $containersNames[$i]->nodeValue,
 							  $containersImages[$i]->nodeValue,
-							  $containersStatus[$i]->nodeValue);
+							  $containersStatus[$i]->nodeValue,
+							  $containersIP[$i]->nodeValue);
 		}
 		}
 	//	else echo '<script>alert("Pas de conteneurs à détruire !");</script>';
