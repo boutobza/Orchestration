@@ -1,0 +1,11 @@
+---
+ 
+- hosts: 192.168.56.101 
+  remote_user: user 
+  tasks:
+          - name: Ajout d'une nouvelle route au CHP present sur le serveur DockerEngine
+            shell: /home/user/DockerScripts/scriptADDRouteToCHP {{ containerID }} {{ containerIP }}
+            vars:
+                    containerID: "{{ containerID }}"
+                    containerIP: "{{ containerIP }}"
+

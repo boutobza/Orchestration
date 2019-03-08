@@ -16,6 +16,9 @@ if(isset($_GET['action']) or (!empty($_POST))){
 	if(isset($_GET['action']))
 	{
 		$id = $_GET['id'];
+
+		$containerIP = $_GET['ip']
+			;
 		if(strcmp($_GET['action'], 'start') == 0){
 			$message = array("start", $id);
 		}
@@ -26,7 +29,7 @@ if(isset($_GET['action']) or (!empty($_POST))){
 			$message = array("destroy", $id);
 		}
 		elseif(strcmp($_GET['action'], 'terminal') == 0){
-			//	$controller->createContainerActionXMLFile('terminal',$_GET['id']);
+			$message = array("terminal", $id, $containerIP);
 		}
 	}
 
@@ -136,7 +139,7 @@ if(isset($_GET['action']) or (!empty($_POST))){
 				<input type="submit" name="upload" value="CRÉER IMAGE" class="button button1">
 			</fieldset>
 			<fieldset>
-				<legend>Gestion&Info Conteneurs</legend>
+				<legend>Gestion&Infos Conteneurs</legend>
 			<select name="image">
 			<?php
 				foreach($images_list as $image){
@@ -201,7 +204,7 @@ if(!empty($containersInfoMatrix[0][0])){
 					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=start" class="button button1">LANCER</a>
 					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=stop" class="button button2">ARRETER</a>
 					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=destroy" class="button button3">DETRUIRE</a>
-					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=terminal" class="button button5">TERMINAL</a>
+					<a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=terminal&amp;ip=<?php echo $containersInfoMatrix[$i][4]?>" class="button button5">TERMINAL</a>
 					</td>
 					<td>
 						<input type="checkbox" name="list_selected_id[]" value=<?php echo $containersInfoMatrix[$i][0]?>>

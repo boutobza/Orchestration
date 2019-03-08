@@ -1,0 +1,9 @@
+---
+
+
+- hosts: 192.168.56.101
+  remote_user: user
+  tasks:
+          - name: Lancement du CHP present sur le serveur DockerEngine
+            shell: /home/user/DockerScripts/scriptLaunchCHP
+

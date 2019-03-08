@@ -11,10 +11,21 @@ def signal_handler(sig, frame):
     print("You pressed Ctrl+C")
     print("Fermeture de la connexion")
     connexion_principale.close()
+# lancement du script qui permet de kill le reverse proxy CHP au meme temps que notre serveur.py
+    subprocess.Popen(["bash", "/var/www/pageDeGestion/html/scripts/scriptToKillCHP"])
+    print("CHP présent sur le serveur Frontal est terminé !")
+# Lancement du script qui permet de kill reverse proxy CHP present sur serveur DockerEngine
+    cmd = subprocess.Popen(["/usr/bin/ansible-playbook", "-i", "/etc/ansible/hosts", "/var/www/pageDeGestion/html/playbooks/killCHP.yml"])
+    cmd.communicate()
     sys.exit(0)
 
 hote = ''
 port = 12800
+
+# Lancement du reverse proxy CHP present sur serveur frontal
+subprocess.Popen(["bash", "/var/www/pageDeGestion/html/scripts/scriptLaunchCHP"])
+# Lancement du reverse proxy CHP present sur serveur DockerEngine
+subprocess.Popen(["/usr/bin/ansible-playbook", "-i", "/etc/ansible/hosts", "/var/www/pageDeGestion/html/playbooks/launchCHP.yml"])
 
 connexion_principale = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -75,6 +86,21 @@ while 1:
             "/var/www/pageDeGestion/html/playbooks/destroyContainer.yml",
             "-e",
             "id={0}".format(data[1])])
+    elif data[0] == "terminal":
+        getContainersInfo = False
+        getImagesList = False
+        # ajout d'une nouvelle route (url) au CHP present sur le serveur frontal pour le conteneur qui a l'ID contenu dans data[1].
+        subprocess.Popen(["bash", "/var/www/pageDeGestion/html/scripts/scriptADDRouteToCHP", data[1]])
+        print('Nouvelle route est ajouté au CHP présent sur le serveur frontal')
+        # ajout d'une nouvelle route au CHP present sur le serveur DockerEngine.
+        c = subprocess.Popen(["/usr/bin/ansible-playbook",
+            "-i",
+            "/etc/ansible/hosts",
+            "/var/www/pageDeGestion/html/playbooks/createRouteInCHP.yml",
+            "-e",
+            "containerID={0}".format(data[1]),
+            "-e",
+            "containerIP={0}".format(data[2])])
     elif data[0] == "buildImg":
         getContainersInfo = False
         getImagesList = True

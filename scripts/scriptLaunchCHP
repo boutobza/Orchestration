@@ -1,0 +1,5 @@
+#!/bin/bash
+
+configurable-http-proxy --ip 192.168.56.102 --port 8000 --default-target=http://192.168.56.102 --api-ip 192.168.56.102 --api-port 8888 &> /dev/null &
+
+echo 'CHP présent sur le serveur frontal est lancé !'
