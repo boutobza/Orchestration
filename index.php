@@ -10,6 +10,9 @@ $nbConteneursTotal = $controller->getContainersTotalNumber();
 #images_list est un tableau qui contient toutes les images docker
 $images_list = $controller->getImagesList();
 
+# var pour la partie terminal car la redirection de cette fonction (terminal) est different des autres fonctions
+$executeHeaderForTerminal = false;
+
 
 if(isset($_GET['action']) or (!empty($_POST))){
 
@@ -29,6 +32,7 @@ if(isset($_GET['action']) or (!empty($_POST))){
 			$message = array("destroy", $id);
 		}
 		elseif(strcmp($_GET['action'], 'terminal') == 0){
+			$executeHeaderForTerminal = true;
 			$message = array("terminal", $id, $containerIP);
 		}
 	}
@@ -114,11 +118,18 @@ if(isset($_GET['action']) or (!empty($_POST))){
 			$message = array("delete_img", $imgName);
 		}
 	}
-
-	$controller->socketHandler($message);	
-
-	header('Location: index.php');
-	exit;
+	
+	if($executeHeaderForTerminal){
+		
+		$controller->socketHandler($message);	
+		header('Location: http://192.168.56.102:8000/'.$id.'/');
+		exit;
+	}
+	else {
+		$controller->socketHandler($message);	
+		header('Location: index.php');
+		exit;
+	}
 }
 ?>
 <!DOCTYPE html>
@@ -127,6 +138,7 @@ if(isset($_GET['action']) or (!empty($_POST))){
 		<meta charset="UTF-8">
 		<title>Page de gestion</title>
 		<link rel="stylesheet" type="text/css" href="style.css">
+		<script type="text/javascript" src="script.js"></script>
 	</head>
 	<body>
 		<form action="index.php" method="post" enctype="multipart/form-data">
@@ -160,13 +172,22 @@ if(isset($_GET['action']) or (!empty($_POST))){
 				<option>8</option>
 				<option>9</option>
 				<option>10</option>
-			</select>
+			</select><br>
+			<fieldset>
+				<legend>Actions Conteneurs</legend>
 			<input type="submit" name="create" value="CRÉER" class='button button1'/>
-			<input type="submit" name="destroyall" value="TOUT DÉTERUIRE" class='button button3'/><br>
+			<input type="submit" name="destroyall" value="TOUT DÉTERUIRE" class='button button3'/>
+</fieldset>
+			<fieldset>
+				<legend>Actions Conteneurs Sélectionnés</legend>
 			<input type="submit" name="start_selection" value="LANCER SÉLÉCTION" class='button button1'/>
 			<input type="submit" name="stop_selection" value="ARRÊTER SÉLÉCTION" class='button button2'/>
-			<input type="submit" name="destroy_selection" value="DÉTRUIRE SÉLÉCTION" class='button button3'/><br>
+			<input type="submit" name="destroy_selection" value="DÉTRUIRE SÉLÉCTION" class='button button3'/>
+</fieldset>
+			<fieldset>
+				<legend>Actions Image</legend>
 			<input type="submit" name="delete_img" value="SUPPRIMER IMAGE" class='button button3'/>
+</fieldset><br>
 			<table border="1" width="100%">
 				<thead>
 					<th>ID</th>
