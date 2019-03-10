@@ -1,0 +1,25 @@
+server {
+	listen 80 default_server;
+
+	listen [::]:80 default_server;
+
+	root /var/www/pageDeGestion/html;
+
+	index index.php;
+
+	server_name 192.168.56.102;
+
+	location / {
+		try_files $uri $uri/ =404;
+	}
+
+	location ~ \.php$ {
+		include fastcgi_params;
+		include snippets/fastcgi-php.conf;
+		fastcgi_pass unix:/run/php/php7.2-fpm.sock;
+	}
+	location /terminal {
+		rewrite ^/terminal(.*) /$1 break;
+		proxy_pass http://192.168.56.102:8000;
+	}
+}
