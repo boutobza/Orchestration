@@ -44,18 +44,19 @@ signal.signal(signal.SIGINT, signal_handler)
 while 1:
     getContainersInfo = True
     getImagesList = False
+    removeRouteFromCHP = False
+    waitForCmdToFinish = True
 
     connexion_avec_client, infos_connexion = connexion_principale.accept()
     msg_recu = connexion_avec_client.recv(1024)
     print("",msg_recu)
     #on décode le message recu en un tableau 
     data = json.loads(msg_recu)
-
-    if data[0] == "destroyall":
-        c = subprocess.Popen(["/usr/bin/ansible-playbook",
-            "-i",
-            "/etc/ansible/hosts",
-            "/var/www/pageDeGestion/html/playbooks/destroyAllContainers.yml"])
+#############################################REFRESH###################################################
+    if data[0] == "refresh":
+        getContainersInfo = True
+        waitForCmdToFinish = False
+###############################################CREATE###################################################
     elif data[0] == "create":
         c = subprocess.Popen(["/usr/bin/ansible-playbook",
             "-i",
@@ -65,6 +66,7 @@ while 1:
             "nb={0}".format(data[1]),
             "-e",
             "image={0}".format(data[2])])
+###############################################START####################################################
     elif data[0] == "start":
         c = subprocess.Popen(["/usr/bin/ansible-playbook",
             "-i",
@@ -72,26 +74,31 @@ while 1:
             "/var/www/pageDeGestion/html/playbooks/startContainer.yml",
             "-e",
             "id={0}".format(data[1])])
+###############################################STOP#####################################################
     elif data[0] == "stop":
+        removeRouteFromCHP = True
         c = subprocess.Popen(["/usr/bin/ansible-playbook",
             "-i",
             "/etc/ansible/hosts",
             "/var/www/pageDeGestion/html/playbooks/stopContainer.yml",
             "-e",
             "id={0}".format(data[1])])
+##############################################DESTROY###################################################       
     elif data[0] == "destroy":
+        removeRouteFromCHP = True
         c = subprocess.Popen(["/usr/bin/ansible-playbook",
             "-i",
             "/etc/ansible/hosts",
             "/var/www/pageDeGestion/html/playbooks/destroyContainer.yml",
             "-e",
             "id={0}".format(data[1])])
+##############################################TERMINAL##################################################
     elif data[0] == "terminal":
         getContainersInfo = False
         getImagesList = False
         # ajout d'une nouvelle route (url) au CHP present sur le serveur frontal pour le conteneur qui a l'ID contenu dans data[1].
         subprocess.Popen(["bash", "/var/www/pageDeGestion/html/scripts/scriptADDRouteToCHP", data[1]])
-        print('Nouvelle route est ajouté au CHP présent sur le serveur frontal')
+        print('Nouvelle route est ajouté au CHP présent sur le serveur Frontal')
         # ajout d'une nouvelle route au CHP present sur le serveur DockerEngine.
         c = subprocess.Popen(["/usr/bin/ansible-playbook",
             "-i",
@@ -101,6 +108,7 @@ while 1:
             "containerID={0}".format(data[1]),
             "-e",
             "containerIP={0}".format(data[2])])
+##############################################BUILD_IMAGE###############################################
     elif data[0] == "buildImg":
         getContainersInfo = False
         getImagesList = True
@@ -113,6 +121,7 @@ while 1:
             "file_name={0}".format(data[1]),
             "-e",
             "image_tag={0}".format(data[2])])
+############################################START_SELECTION#############################################
     elif data[0] == "start_selection":
         c = subprocess.Popen(["/usr/bin/ansible-playbook",
             "-i",
@@ -120,20 +129,25 @@ while 1:
             "/var/www/pageDeGestion/html/playbooks/startSelection.yml",
             "-e",
             "selection={0}".format(data[1])])
+############################################STOP_SELECTION#############################################
     elif data[0] == "stop_selection":
+        #removeRouteFromCHP = True
         c = subprocess.Popen(["/usr/bin/ansible-playbook",
             "-i",
             "/etc/ansible/hosts",
             "/var/www/pageDeGestion/html/playbooks/stopSelection.yml",
             "-e",
             "selection={0}".format(data[1])])
+##########################################DESTROY_SELECTION#############################################
     elif data[0] == "destroy_selection":
+        #removeRouteFromCHP = True
         c = subprocess.Popen(["/usr/bin/ansible-playbook",
             "-i",
             "/etc/ansible/hosts",
             "/var/www/pageDeGestion/html/playbooks/destroySelection.yml",
             "-e",
             "selection={0}".format(data[1])])
+##############################################DELETE_IMAGE##############################################
     elif data[0] == "delete_img":
         getContainersInfo = False
         getImagesList = True
@@ -144,10 +158,11 @@ while 1:
             "/var/www/pageDeGestion/html/playbooks/deleteImage.yml",
             "-e",
             "image_name={0}".format(data[1])])
-
+########################################################################################################
 
     #on attend que la commande c ansible se termine
-    c.communicate()
+    if waitForCmdToFinish == True:
+        c.communicate()
 
     if getImagesList == True:
         cmd_recup_img_list = subprocess.Popen(["/usr/bin/ansible-playbook",
@@ -155,6 +170,7 @@ while 1:
             "/etc/ansible/hosts",
             "/var/www/pageDeGestion/html/playbooks/getImagesList.yml"])
         cmd_recup_img_list.communicate()
+
     #la commande suivante recupère les infos des conteneurs
     if getContainersInfo == True:
         p = subprocess.Popen(["/usr/bin/ansible-playbook",
@@ -163,6 +179,19 @@ while 1:
             "/var/www/pageDeGestion/html/playbooks/getContainersInfo.yml"])
     #on attend que la commande p se finisse au cas ou ^^
         p.communicate()
+
+    if removeRouteFromCHP == True:
+        subprocess.Popen(["bash", "/var/www/pageDeGestion/html/scripts/scriptRemoveRouteFromCHP", data[1]])
+        print('Route(s) est supprimée(s) du CHP présent sur le serveur Frontal avec succès')
+        # supp de la route au CHP present sur le serveur DockerEngine.
+        c = subprocess.Popen(["/usr/bin/ansible-playbook",
+            "-i",
+            "/etc/ansible/hosts",
+            "/var/www/pageDeGestion/html/playbooks/removeRouteFromCHP.yml",
+            "-e",
+            "containerID={0}".format(data[1])])
+        c.communicate();
+
     #la commande suivante envoie ok (peu importe ce que l'on envoie)  à la page php qui est normalement en train d'attendre
     connexion_avec_client.send(b"ok")
     print("FIN commandes Ansible")
