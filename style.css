@@ -6,7 +6,7 @@
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-size: 10px;
+  font-size: 13px;
   margin: 4px 2px;
   -webkit-transition-duration: 0.4s; /* Safari */
   transition-duration: 0.4s;
@@ -44,7 +44,9 @@
   color: black;
   border: 2px solid #e7e7e7;
 }
-.button4:hover {background-color: #e7e7e7;}
+.button4:hover {
+background-color: #e7e7e7;
+}
 .button5 {
   background-color: white;
   color: black;
@@ -56,11 +58,13 @@
 }
 table {
   border-collapse: collapse;
-  width: 60%;
+  width: 100%;
 }
-th, td, th {
+th, td {
   padding: 2px;
   text-align: center;
   border-bottom: 1px solid #ddd;
 }
-tr:hover {background-color:#f5f5f5;}
+tr:hover {
+  background-color:#f5f5f5;
+}

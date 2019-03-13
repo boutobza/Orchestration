@@ -41,6 +41,8 @@ print("Le serveur écoute à présent sur le port {}".format(port))
 # le signal SIGINT, dans la pratique ça ne résout pas le problème de "Adress already in use"
 signal.signal(signal.SIGINT, signal_handler)
 
+terminalButtonClicked = False
+
 while 1:
     getContainersInfo = True
     getImagesList = False
@@ -52,6 +54,7 @@ while 1:
     print("",msg_recu)
     #on décode le message recu en un tableau 
     data = json.loads(msg_recu)
+
 #############################################REFRESH###################################################
     if data[0] == "refresh":
         getContainersInfo = True
@@ -66,34 +69,9 @@ while 1:
             "nb={0}".format(data[1]),
             "-e",
             "image={0}".format(data[2])])
-###############################################START####################################################
-    elif data[0] == "start":
-        c = subprocess.Popen(["/usr/bin/ansible-playbook",
-            "-i",
-            "/etc/ansible/hosts",
-            "/var/www/pageDeGestion/html/playbooks/startContainer.yml",
-            "-e",
-            "id={0}".format(data[1])])
-###############################################STOP#####################################################
-    elif data[0] == "stop":
-        removeRouteFromCHP = True
-        c = subprocess.Popen(["/usr/bin/ansible-playbook",
-            "-i",
-            "/etc/ansible/hosts",
-            "/var/www/pageDeGestion/html/playbooks/stopContainer.yml",
-            "-e",
-            "id={0}".format(data[1])])
-##############################################DESTROY###################################################       
-    elif data[0] == "destroy":
-        removeRouteFromCHP = True
-        c = subprocess.Popen(["/usr/bin/ansible-playbook",
-            "-i",
-            "/etc/ansible/hosts",
-            "/var/www/pageDeGestion/html/playbooks/destroyContainer.yml",
-            "-e",
-            "id={0}".format(data[1])])
 ##############################################TERMINAL##################################################
     elif data[0] == "terminal":
+        terminalButtonClicked = True
         getContainersInfo = False
         getImagesList = False
         # ajout d'une nouvelle route (url) au CHP present sur le serveur frontal pour le conteneur qui a l'ID contenu dans data[1].
@@ -122,7 +100,7 @@ while 1:
             "-e",
             "image_tag={0}".format(data[2])])
 ############################################START_SELECTION#############################################
-    elif data[0] == "start_selection":
+    elif data[0] == "start_selection" or data[0] == "start":
         c = subprocess.Popen(["/usr/bin/ansible-playbook",
             "-i",
             "/etc/ansible/hosts",
@@ -130,8 +108,8 @@ while 1:
             "-e",
             "selection={0}".format(data[1])])
 ############################################STOP_SELECTION#############################################
-    elif data[0] == "stop_selection":
-        #removeRouteFromCHP = True
+    elif data[0] == "stop_selection" or data[0] == "stop":
+        removeRouteFromCHP = True
         c = subprocess.Popen(["/usr/bin/ansible-playbook",
             "-i",
             "/etc/ansible/hosts",
@@ -139,8 +117,8 @@ while 1:
             "-e",
             "selection={0}".format(data[1])])
 ##########################################DESTROY_SELECTION#############################################
-    elif data[0] == "destroy_selection":
-        #removeRouteFromCHP = True
+    elif data[0] == "destroy_selection" or data[0] == "destroy":
+        removeRouteFromCHP = True
         c = subprocess.Popen(["/usr/bin/ansible-playbook",
             "-i",
             "/etc/ansible/hosts",
@@ -180,7 +158,7 @@ while 1:
     #on attend que la commande p se finisse au cas ou ^^
         p.communicate()
 
-    if removeRouteFromCHP == True:
+    if removeRouteFromCHP == True and terminalButtonClicked == True:
         subprocess.Popen(["bash", "/var/www/pageDeGestion/html/scripts/scriptRemoveRouteFromCHP", data[1]])
         print('Route(s) est supprimée(s) du CHP présent sur le serveur Frontal avec succès')
         # supp de la route au CHP present sur le serveur DockerEngine.
@@ -191,6 +169,7 @@ while 1:
             "-e",
             "containerID={0}".format(data[1])])
         c.communicate();
+        terminalButtonClicked = False
 
     #la commande suivante envoie ok (peu importe ce que l'on envoie)  à la page php qui est normalement en train d'attendre
     connexion_avec_client.send(b"ok")
