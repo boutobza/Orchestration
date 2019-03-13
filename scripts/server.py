@@ -41,7 +41,7 @@ print("Le serveur écoute à présent sur le port {}".format(port))
 # le signal SIGINT, dans la pratique ça ne résout pas le problème de "Adress already in use"
 signal.signal(signal.SIGINT, signal_handler)
 
-terminalButtonClicked = False
+#terminalButtonClicked = False
 
 while 1:
     getContainersInfo = True
@@ -71,7 +71,7 @@ while 1:
             "image={0}".format(data[2])])
 ##############################################TERMINAL##################################################
     elif data[0] == "terminal":
-        terminalButtonClicked = True
+        #terminalButtonClicked = True
         getContainersInfo = False
         getImagesList = False
         # ajout d'une nouvelle route (url) au CHP present sur le serveur frontal pour le conteneur qui a l'ID contenu dans data[1].
@@ -158,7 +158,7 @@ while 1:
     #on attend que la commande p se finisse au cas ou ^^
         p.communicate()
 
-    if removeRouteFromCHP == True and terminalButtonClicked == True:
+    if removeRouteFromCHP == True:
         subprocess.Popen(["bash", "/var/www/pageDeGestion/html/scripts/scriptRemoveRouteFromCHP", data[1]])
         print('Route(s) est supprimée(s) du CHP présent sur le serveur Frontal avec succès')
         # supp de la route au CHP present sur le serveur DockerEngine.
