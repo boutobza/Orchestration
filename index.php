@@ -1,16 +1,12 @@
 <?php
 include ('Controller.php');
 
-#session_start();
-#
-#$token = bin2hex(random_bytes(5));
-#
-#$_SESSION['token'] = $token;
-#
-#$s = $_SESSION['token'];
-#
-#echo "token avant click ter :".$token."<br>";
-#echo "session token avant click ter :".$s."<br>";
+session_start();
+
+if (empty($_SESSION['key']))
+	$_SESSION['key'] = bin2hex(random_bytes(32));
+
+$token_value = hash_hmac('sha256', 'index.php', $_SESSION['key']);
 
 $controller = new Controller();
 
@@ -31,7 +27,7 @@ if(isset($_GET['action']) AND !empty($_GET['action']) OR (!empty($_POST))){
 	{
 		$id = $_GET['id'];
 
-			
+
 		if(strcmp($_GET['action'], 'start') == 0){
 			$message = array("start", $id);
 		}
@@ -42,9 +38,12 @@ if(isset($_GET['action']) AND !empty($_GET['action']) OR (!empty($_POST))){
 			$message = array("destroy", $id);
 		}
 		elseif(strcmp($_GET['action'], 'terminal') == 0){
-			
-			$containerIP = $_GET['ip'];
-			$executeHeaderForTerminal = true;
+			if(hash_equals($token_value, $_GET['token'])){	
+				$containerIP = $_GET['ip'];
+				$executeHeaderForTerminal = true;
+			} else {
+				echo "Token Not Valid !";
+			}
 		}
 	}
 
@@ -244,7 +243,7 @@ if(isset($_GET['action']) AND !empty($_GET['action']) OR (!empty($_POST))){
 				    <a href="index.php?id=<?= $containersInfoMatrix[$i][0]?>&amp;action=start" class="button button1">LANCER</a>
 				    <a href="index.php?id=<?= $containersInfoMatrix[$i][0]?>&amp;action=stop" class="button button2">ARRÊTER</a>
 				    <a href="index.php?id=<?= $containersInfoMatrix[$i][0]?>&amp;action=destroy" class="button button3">DÉTRUIRE</a>
-				    <a href="index.php?id=<?= $containersInfoMatrix[$i][0]?>&amp;action=terminal" target="_blank" class="button button5">TERMINAL</a>
+				    <a href="index.php?id=<?= $containersInfoMatrix[$i][0]?>&amp;action=terminal&amp;token=<?= $token_value; ?>" target="_blank" class="button button5">TERMINAL</a>
 			    </td>
 	  </tr>
 	  <?php
