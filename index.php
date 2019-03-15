@@ -1,6 +1,17 @@
 <?php
 include ('Controller.php');
 
+#session_start();
+#
+#$token = bin2hex(random_bytes(5));
+#
+#$_SESSION['token'] = $token;
+#
+#$s = $_SESSION['token'];
+#
+#echo "token avant click ter :".$token."<br>";
+#echo "session token avant click ter :".$s."<br>";
+
 $controller = new Controller();
 
 $containersInfoMatrix = $controller->displayContainersInfo();
@@ -14,14 +25,13 @@ $images_list = $controller->getImagesList();
 $executeHeaderForTerminal = false;
 
 
-if(isset($_GET['action']) or (!empty($_POST))){
+if(isset($_GET['action']) AND !empty($_GET['action']) OR (!empty($_POST))){
 
-	if(isset($_GET['action']))
+	if(isset($_GET['action']) AND !empty($_GET['action']))
 	{
 		$id = $_GET['id'];
 
-		$containerIP = $_GET['ip']
-			;
+			
 		if(strcmp($_GET['action'], 'start') == 0){
 			$message = array("start", $id);
 		}
@@ -32,8 +42,9 @@ if(isset($_GET['action']) or (!empty($_POST))){
 			$message = array("destroy", $id);
 		}
 		elseif(strcmp($_GET['action'], 'terminal') == 0){
+			
+			$containerIP = $_GET['ip'];
 			$executeHeaderForTerminal = true;
-			$message = array("terminal", $id, $containerIP);
 		}
 	}
 
@@ -125,8 +136,7 @@ if(isset($_GET['action']) or (!empty($_POST))){
 
 	if($executeHeaderForTerminal){
 
-		$controller->socketHandler($message);	
-		header('Location: http://192.168.56.102/terminal/'.$id.'/');
+		header('Location: terminal/'.$id.'/');
 		exit;
 	}
 	else {
@@ -155,12 +165,12 @@ if(isset($_GET['action']) or (!empty($_POST))){
 				<input type="submit" name="upload" value="CRÉER IMAGE" class="button button1">
 			</fieldset>
 			<fieldset>
-				<legend>Gestion&Infos Conteneurs</legend>
+				<legend>Gestion & Infos Conteneurs</legend>
 				<select name="image" style="font-size:16px;">
 					<?php
 			 foreach($images_list as $image){
 			 ?>
-			 <option><?php echo $image;?></option>
+			 <option><?= $image;?></option>
 			 <?php
 			 }
 			 ?>
@@ -194,14 +204,14 @@ if(isset($_GET['action']) or (!empty($_POST))){
 				</fieldset><br>
 				<table border="1">
 					<thead>
-						<th>N°</th>
-						<th><input type="checkbox" id="check_ctr" onClick="checkAll();"></th>
-						<th width="10%">ID</th>
-						<th width="15%">NOM</th>
-						<th width="10%">IMAGE</th>
-						<th width="10%">ÉTAT</th>
-						<th width="10%">IP</th>
-						<th width="40%">ACTIONS</th>
+						<th width="3%">N°</th>
+						<th width="3%"><input type="checkbox" id="check_ctr" onClick="checkAll();"></th>
+						<th width="7%">ID</th>
+						<th width="10%">NOM</th>
+						<th width="9%">IMAGE</th>
+						<th width="9%">ÉTAT</th>
+						<th width="9%">IP</th>
+						<th width="50%">ACTIONS</th>
 					</thead>
 					<tbody>
 						<?php
@@ -211,10 +221,10 @@ if(isset($_GET['action']) or (!empty($_POST))){
 	  ?>
 	  <tr>
 		  <td>
-			  <?php echo $i+1 ?>
+			  <?= $i+1 ?>
 		  </td>
 		  <td>
-			  <input type="checkbox" name="list_selected_id[]" value=<?php echo $containersInfoMatrix[$i][0]?>>
+			  <input type="checkbox" name="list_selected_id[]" value=<?= $containersInfoMatrix[$i][0]?>>
 		  </td>
 		  <?php
 		  /* var $j nb info qu'on va afficher ici on a 4 ID, NOM, IMAGE, ETAT
@@ -224,19 +234,17 @@ if(isset($_GET['action']) or (!empty($_POST))){
 			    for($j = 0; $j < 5; $j++){
 			    ?>
 			    <td align='center'>
-				    <?php
-				    echo $containersInfoMatrix[$i][$j];
-				    ?>
+				    <?= $containersInfoMatrix[$i][$j]; ?>
 			    </td>
 			    <?php
 			    }
 			    // Les actions qu'on peut effectuer sur nos conteneurs
 			    ?>
 			    <td align='center'>
-				    <a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=start" class="button button1">LANCER</a>
-				    <a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=stop" class="button button2">ARRÊTER</a>
-				    <a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=destroy" class="button button3">DÉTRUIRE</a>
-				    <a href="index.php?id=<?php echo $containersInfoMatrix[$i][0]?>&amp;action=terminal&amp;ip=<?php echo $containersInfoMatrix[$i][4]?>" class="button button5">TERMINAL</a>
+				    <a href="index.php?id=<?= $containersInfoMatrix[$i][0]?>&amp;action=start" class="button button1">LANCER</a>
+				    <a href="index.php?id=<?= $containersInfoMatrix[$i][0]?>&amp;action=stop" class="button button2">ARRÊTER</a>
+				    <a href="index.php?id=<?= $containersInfoMatrix[$i][0]?>&amp;action=destroy" class="button button3">DÉTRUIRE</a>
+				    <a href="index.php?id=<?= $containersInfoMatrix[$i][0]?>&amp;action=terminal" target="_blank" class="button button5">TERMINAL</a>
 			    </td>
 	  </tr>
 	  <?php

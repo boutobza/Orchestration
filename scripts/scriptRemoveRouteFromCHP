@@ -1,17 +1,17 @@
 #!/bin/bash
 
 containerID=$1
-str=${#containerID}
+length=${#containerID}
 # 12 en bas représente le nombre de caractères dans un ID conteneur docker
-if [ $str -eq 12 ]
+if [ $length -eq 12 ]
 then 
 	curl -X "DELETE" 192.168.56.102:8888/api/routes/$containerID
 
-elif [ $str -gt 12 ]
+elif [ $length -gt 12 ]
 then
 	containerID=${containerID:2:-1}
-	IFS=' ' read -r -a array <<< "$containerID"
-	for id in "${array[@]}"
+	IFS=' ' read -r -a cddd <<< "$containerID"
+	for id in "${cddd[@]}"
 	do
 		curl -X "DELETE" 192.168.56.102:8888/api/routes/$id
 	done

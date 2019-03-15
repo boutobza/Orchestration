@@ -4,8 +4,9 @@
   remote_user: user 
   tasks:
           - name: Ajout d'une nouvelle route au CHP present sur le serveur DockerEngine
-            shell: /home/user/DockerScripts/scriptADDRouteToCHP {{ containerID }} {{ containerIP }}
+            shell: /home/user/DockerScripts/scriptADDRouteToCHP {{ containerNB }} {{ containerID }} {{ containerIP }}
             vars:
+                    containerNB: "{{ containerNB }}"
                     containerID: "{{ containerID }}"
                     containerIP: "{{ containerIP }}"
 

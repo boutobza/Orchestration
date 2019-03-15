@@ -3,7 +3,7 @@
 - hosts: 192.168.56.101 
   remote_user: user 
   tasks:
-          - name: lancement du script de création du fichier qui regroupe les infos des conteneurs 
+          - name: Lancement du script de création du fichier qui regroupe les infos des conteneurs 
             shell: python3 /home/user/DockerScripts/scriptCreateXML.py 
             #on enregistre le resultat de la commande dans une variable
             register: resultat
@@ -14,5 +14,6 @@
 - hosts: 192.168.56.102 
   remote_user: user 
   tasks:
-          - local_action: copy content={{ hostvars['192.168.56.101']['sortie'] }} dest=/var/www/pageDeGestion/html/user/retour.xml
+          - name: Récupération des infos des conteneurs
+            local_action: copy content={{ hostvars['192.168.56.101']['sortie'] }} dest=/var/www/pageDeGestion/html/user/retour.xml
 ...

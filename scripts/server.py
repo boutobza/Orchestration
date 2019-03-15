@@ -6,7 +6,9 @@ import time
 import json
 import signal
 import sys
+import xml.etree.ElementTree as ET
 
+#methode pour detruire server.py, CHP_Frontal, CHP_DockerEngine
 def signal_handler(sig, frame):
     print("You pressed Ctrl+C")
     print("Fermeture de la connexion")
@@ -18,12 +20,44 @@ def signal_handler(sig, frame):
     cmd = subprocess.Popen(["/usr/bin/ansible-playbook", "-i", "/etc/ansible/hosts", "/var/www/pageDeGestion/html/playbooks/killCHP.yml"])
     cmd.communicate()
     sys.exit(0)
+#methode pour recuperer les infos des conteneurs
+
+def getContainersinfos():
+        cmd = subprocess.Popen(["/usr/bin/ansible-playbook",
+            "-i",
+            "/etc/ansible/hosts",
+            "/var/www/pageDeGestion/html/playbooks/getContainersInfo.yml"])
+    #on attend que la commande cmd se finisse au cas ou ^^
+        cmd.communicate()
+
+#methode pour parser le fichier retour.xml pour recuperer containerIDs & containerIPs pour les utliser lorsque on lance le terminal
+
+def createCHPRoutes(nbContainers, containerIDs, containerIPs):
+        # ajout d'une nouvelle route (url) au CHP present sur le serveur frontal pour le conteneur qui a l'ID contenu dans data[1].
+        subprocess.Popen(["bash", "/var/www/pageDeGestion/html/scripts/scriptADDRouteToCHP", containerIDs])
+        print('Nouvelle(s) route(s) est ajoutée au CHP présent sur le serveur Frontal')
+
+        # ajout d'une nouvelle route au CHP present sur le serveur DockerEngine.
+        cmd = subprocess.Popen(["/usr/bin/ansible-playbook",
+            "-i",
+            "/etc/ansible/hosts",
+            "/var/www/pageDeGestion/html/playbooks/createRouteInCHP.yml",
+            "-e",
+            "containerNB={0}".format(nbContainers),
+            "-e",
+            "containerID={0}".format(containerIDs),
+            "-e",
+            "containerIP={0}".format(containerIPs)])
+
+        cmd.communicate()
+
 
 hote = ''
 port = 12800
 
 # Lancement du reverse proxy CHP present sur serveur frontal
 subprocess.Popen(["bash", "/var/www/pageDeGestion/html/scripts/scriptLaunchCHP"])
+
 # Lancement du reverse proxy CHP present sur serveur DockerEngine
 subprocess.Popen(["/usr/bin/ansible-playbook", "-i", "/etc/ansible/hosts", "/var/www/pageDeGestion/html/playbooks/launchCHP.yml"])
 
@@ -41,7 +75,6 @@ print("Le serveur écoute à présent sur le port {}".format(port))
 # le signal SIGINT, dans la pratique ça ne résout pas le problème de "Adress already in use"
 signal.signal(signal.SIGINT, signal_handler)
 
-#terminalButtonClicked = False
 
 while 1:
     getContainersInfo = True
@@ -69,23 +102,6 @@ while 1:
             "nb={0}".format(data[1]),
             "-e",
             "image={0}".format(data[2])])
-##############################################TERMINAL##################################################
-    elif data[0] == "terminal":
-        #terminalButtonClicked = True
-        getContainersInfo = False
-        getImagesList = False
-        # ajout d'une nouvelle route (url) au CHP present sur le serveur frontal pour le conteneur qui a l'ID contenu dans data[1].
-        subprocess.Popen(["bash", "/var/www/pageDeGestion/html/scripts/scriptADDRouteToCHP", data[1]])
-        print('Nouvelle route est ajouté au CHP présent sur le serveur Frontal')
-        # ajout d'une nouvelle route au CHP present sur le serveur DockerEngine.
-        c = subprocess.Popen(["/usr/bin/ansible-playbook",
-            "-i",
-            "/etc/ansible/hosts",
-            "/var/www/pageDeGestion/html/playbooks/createRouteInCHP.yml",
-            "-e",
-            "containerID={0}".format(data[1]),
-            "-e",
-            "containerIP={0}".format(data[2])])
 ##############################################BUILD_IMAGE###############################################
     elif data[0] == "buildImg":
         getContainersInfo = False
@@ -101,12 +117,59 @@ while 1:
             "image_tag={0}".format(data[2])])
 ############################################START_SELECTION#############################################
     elif data[0] == "start_selection" or data[0] == "start":
-        c = subprocess.Popen(["/usr/bin/ansible-playbook",
+        cmd = subprocess.Popen(["/usr/bin/ansible-playbook",
             "-i",
             "/etc/ansible/hosts",
             "/var/www/pageDeGestion/html/playbooks/startSelection.yml",
             "-e",
             "selection={0}".format(data[1])])
+        cmd.communicate()
+
+        getContainersinfos()
+
+        xmlTree = ET.parse('/var/www/pageDeGestion/html/user/retour.xml')
+        rootTag = xmlTree.getroot()
+        length = len(rootTag.getchildren())
+
+#  12 en bas represente le nombre de caractère present dans l'ID d'un conteneur
+        if len(data[1]) > 12:
+            IDs = data[1]# data[1] contient l'ID ou les IDs des conteneurs
+            IDs = IDs[2:-1] # pour supp les deux premier caractères et le dernier aussi
+            tableIDs = IDs.split() # mettre les IDs conteneurs séparés par des espaces dans tableau
+            containerIDs = '"'
+            containerIPs = '"'
+            nbContainers = 0
+            for containerID in tableIDs:
+                i = 0
+                #recherche les IDs des conteneurs dans le fichier retour.xml et récupération de leurs IPs s'ils ont bien sélectionné
+                while i < length:
+                    if containerID == rootTag[i][0].text:
+                        containerIDs += " "+ rootTag[i][0].text 
+                        containerIPs += " "+ rootTag[i][4].text
+                        nbContainers += 1
+                        break
+                    else:    
+                        i += 1
+
+            containerIDs += '"'
+            containerIPs += '"'
+            createCHPRoutes(nbContainers, containerIDs, containerIPs)
+
+            #cette partie est éxecutée lorsque on sélectionne un seul conteneur
+        elif len(data[1]) == 12:
+            containerID = data[1]
+            containerIP = ""
+            i = 0
+            while i < length: 
+                if containerID == rootTag[i][0].text:
+                    containerIP = rootTag[i][4].text
+                    break
+                else:
+                    i += 1
+            createCHPRoutes(1, containerID, containerIP)
+
+
+
 ############################################STOP_SELECTION#############################################
     elif data[0] == "stop_selection" or data[0] == "stop":
         removeRouteFromCHP = True
@@ -151,13 +214,7 @@ while 1:
 
     #la commande suivante recupère les infos des conteneurs
     if getContainersInfo == True:
-        p = subprocess.Popen(["/usr/bin/ansible-playbook",
-            "-i",
-            "/etc/ansible/hosts",
-            "/var/www/pageDeGestion/html/playbooks/getContainersInfo.yml"])
-    #on attend que la commande p se finisse au cas ou ^^
-        p.communicate()
-
+        getContainersinfos()
     if removeRouteFromCHP == True:
         subprocess.Popen(["bash", "/var/www/pageDeGestion/html/scripts/scriptRemoveRouteFromCHP", data[1]])
         print('Route(s) est supprimée(s) du CHP présent sur le serveur Frontal avec succès')
@@ -169,7 +226,6 @@ while 1:
             "-e",
             "containerID={0}".format(data[1])])
         c.communicate();
-        terminalButtonClicked = False
 
     #la commande suivante envoie ok (peu importe ce que l'on envoie)  à la page php qui est normalement en train d'attendre
     connexion_avec_client.send(b"ok")

@@ -1,8 +1,12 @@
 ---
+
 - hosts: 192.168.56.101
   remote_user: user
-  vars:
-        containerID: "{{ containerID }}"
   tasks:
-        - name: Suppression de route present sur CHP installé sur le serveur DockerEgine
-          shell: /home/user/DockerScripts/scriptRemoveRouteFromCHP {{ containerID }}
+          - name: Suppression de la route(s) ajoutée(s) au CHP présent sur le serveur DockerEngine
+            command: /home/user/DockerScripts/scriptRemoveRouteFromCHP {{ containerID }}
+            register: result
+            vars:
+                    containerID: "{{ containerID }}"
+...
+
