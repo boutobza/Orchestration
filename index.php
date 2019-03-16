@@ -1,14 +1,11 @@
 <?php
-include ('Controller.php');
-
 session_start();
 
-if (empty($_SESSION['key']))
-	$_SESSION['key'] = bin2hex(random_bytes(32));
-
-$token_value = hash_hmac('sha256', 'index.php', $_SESSION['key']);
+include ('Controller.php');
 
 $controller = new Controller();
+
+$token_value = $controller->getTokenValue();
 
 $containersInfoMatrix = $controller->displayContainersInfo();
 
@@ -18,7 +15,6 @@ $nbConteneursTotal = $controller->getContainersTotalNumber();
 $images_list = $controller->getImagesList();
 
 # var pour la partie terminal car la redirection de cette fonction (terminal) est different des autres fonctions
-$executeHeaderForTerminal = false;
 
 
 if(isset($_GET['action']) AND !empty($_GET['action']) OR (!empty($_POST))){
@@ -26,7 +22,6 @@ if(isset($_GET['action']) AND !empty($_GET['action']) OR (!empty($_POST))){
 	if(isset($_GET['action']) AND !empty($_GET['action']))
 	{
 		$id = $_GET['id'];
-
 
 		if(strcmp($_GET['action'], 'start') == 0){
 			$message = array("start", $id);
@@ -40,9 +35,10 @@ if(isset($_GET['action']) AND !empty($_GET['action']) OR (!empty($_POST))){
 		elseif(strcmp($_GET['action'], 'terminal') == 0){
 			if(hash_equals($token_value, $_GET['token'])){	
 				$containerIP = $_GET['ip'];
-				$executeHeaderForTerminal = true;
+				header('Location: terminal/'.$id.'/');
+				exit;
 			} else {
-				echo "Token Not Valid !";
+				header('Location: error.html');
 			}
 		}
 	}
@@ -65,85 +61,36 @@ if(isset($_GET['action']) AND !empty($_GET['action']) OR (!empty($_POST))){
 		}
 		elseif(isset($_POST['upload']))
 		{
-			$imgTag = $_POST['imgName'];
-
-			$target_dir = "/var/www/pageDeGestion/html/uploads/";
-			$dockerfileToUpload = basename($_FILES["dockerfileToUpload"]["name"]);
-			$target_file = $target_dir .$dockerfileToUpload;
-			$tmp_file = $_FILES["dockerfileToUpload"]["tmp_name"];
-
-			$controller->uploadDockerfile($dockerfileToUpload, $target_file, $tmp_file);
-			$message = array("buildImg", $dockerfileToUpload, $imgTag);
+			$message = $controller->uploadDockerfile($_POST, $_FILES);
 		}
 		elseif(isset($_POST['start_selection']))
 		{
-			$message = array("start_selection");
-			$containers_list = '"';
-
-			# on veut remplir containers_list avec tous les id des conteneurs qui ont été séléctionnés
-			# pour la suite du processus avec ansible il faut que la liste commence et finisse par '"'	
-			foreach($_POST['list_selected_id'] as $selected){
-				$containers_list.=" ".$selected;
-			}
-
-			# on ajoute à la fin de la liste '"'
-			$containers_list.='"';
-
-			#on ajoute containers_list dans la deuxième case de notre tableau $message
-			array_push($message, $containers_list);
+			$message = $controller->selectionAction("start_selection");
 		}
 		elseif(isset($_POST['stop_selection']))
 		{
-			$message = array("stop_selection");
-			$containers_list = '"';
-
-			# on veut remplir containers_list avec tous les id des conteneurs qui ont été séléctionnés
-			# pour la suite du processus avec ansible il faut que la liste commence et finisse par '"'	
-			foreach($_POST['list_selected_id'] as $selected){
-				$containers_list.=" ".$selected;
-			}
-
-			# on ajoute à la fin de la liste '"'
-			$containers_list.='"';
-
-			#on ajoute containers_list dans la deuxième case de notre tableau $message
-			array_push($message, $containers_list);
+			$message = $controller->selectionAction("stop_selection");
 		}
 		elseif(isset($_POST['destroy_selection']))
 		{
-			$message = array("destroy_selection");
-			$containers_list = '"';
-
-			# on veut remplir containers_list avec tous les id des conteneurs qui ont été séléctionnés
-			# pour la suite du processus avec ansible il faut que la liste commence et finisse par '"'	
-			foreach($_POST['list_selected_id'] as $selected){
-				$containers_list.=" ".$selected;
-			}
-
-			# on ajoute à la fin de la liste '"'
-			$containers_list.='"';
-
-			#on ajoute containers_list dans la deuxième case de notre tableau $message
-			array_push($message, $containers_list);
+			$message = $controller->selectionAction("destroy_selection");
 		}
 		elseif(isset($_POST['delete_img']))
 		{
 			$imgName = $_POST['image'];
 			$message = array("delete_img", $imgName);
 		}
-	}
+		}
 
-	if($executeHeaderForTerminal){
+		if($executeHeaderForTerminal){
 
-		header('Location: terminal/'.$id.'/');
-		exit;
+		}
+		else {
+			$controller->socketHandler($message);	
+			header('Location: index.php');
+			exit;
+		}
 	}
-	else {
-		$controller->socketHandler($message);	
-		header('Location: index.php');
-		exit;
-	}
-}
 ?>
 <!DOCTYPE html>
 <html>
@@ -164,7 +111,7 @@ if(isset($_GET['action']) AND !empty($_GET['action']) OR (!empty($_POST))){
 				<input type="submit" name="upload" value="CRÉER IMAGE" class="button button1">
 			</fieldset>
 			<fieldset>
-				<legend>Gestion & Infos Conteneurs</legend>
+				<legend>Gestion &amp; Infos Conteneurs</legend>
 				<select name="image" style="font-size:16px;">
 					<?php
 			 foreach($images_list as $image){
