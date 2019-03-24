@@ -32,22 +32,21 @@ def getContainersinfos():
 
 #methode pour parser le fichier retour.xml pour recuperer containerIDs & containerIPs pour les utliser lorsque on lance le terminal
 
-def createCHPRoutes(nbContainers, containerIDs, containerIPs):
+def addFrontalCHPRoutes(containerIDs, containerTokens):
         # ajout d'une nouvelle route (url) au CHP present sur le serveur frontal pour le conteneur qui a l'ID contenu dans data[1].
-        subprocess.Popen(["bash", "/var/www/pageDeGestion/html/scripts/scriptADDRouteToCHP", containerIDs])
+        subprocess.Popen(["bash", "/var/www/pageDeGestion/html/scripts/scriptADDRouteToCHP", containerIDs, containerTokens])
         print('Nouvelle(s) route(s) est ajoutée au CHP présent sur le serveur Frontal')
 
+def addDockerCHPRoutes(nbContainers, containersInfo):
         # ajout d'une nouvelle route au CHP present sur le serveur DockerEngine.
         cmd = subprocess.Popen(["/usr/bin/ansible-playbook",
             "-i",
             "/etc/ansible/hosts",
             "/var/www/pageDeGestion/html/playbooks/createRouteInCHP.yml",
             "-e",
-            "containerNB={0}".format(nbContainers),
+            "nbContainers={0}".format(nbContainers),
             "-e",
-            "containerID={0}".format(containerIDs),
-            "-e",
-            "containerIP={0}".format(containerIPs)])
+            "containersInfo={0}".format(containersInfo)])
 
         cmd.communicate()
 
@@ -117,6 +116,7 @@ while 1:
             "image_tag={0}".format(data[2])])
 ############################################START_SELECTION#############################################
     elif data[0] == "start_selection" or data[0] == "start":
+        waitForCmdToFinish = False
         cmd = subprocess.Popen(["/usr/bin/ansible-playbook",
             "-i",
             "/etc/ansible/hosts",
@@ -133,40 +133,54 @@ while 1:
 
 #  12 en bas represente le nombre de caractère present dans l'ID d'un conteneur
         if len(data[1]) > 12:
+
             IDs = data[1]# data[1] contient l'ID ou les IDs des conteneurs
             IDs = IDs[2:-1] # pour supp les deux premier caractères et le dernier aussi
-            tableIDs = IDs.split() # mettre les IDs conteneurs séparés par des espaces dans tableau
-            containerIDs = '"'
-            containerIPs = '"'
+            ids_table = IDs.split() # mettre les IDs conteneurs séparés par des espaces dans tableau
+            tokens = data[2]# data[2] contient le token ou les tokens des conteneurs
+            tokens = tokens[2:-1] 
+            tokens_table = tokens.split()
+            containerIDs = ''
+            containerIPs = ''
+            containerTokens = ''
             nbContainers = 0
-            for containerID in tableIDs:
+
+
+            tokens_table_len = len(ids_table)
+            k = 0
+            while k < tokens_table_len:
                 i = 0
                 #recherche les IDs des conteneurs dans le fichier retour.xml et récupération de leurs IPs s'ils ont bien sélectionné
                 while i < length:
-                    if containerID == rootTag[i][0].text:
-                        containerIDs += " "+ rootTag[i][0].text 
+                    if ids_table[k] == rootTag[i][0].text:
+                        containerIDs += " "+ ids_table[k]
                         containerIPs += " "+ rootTag[i][4].text
+                        containerTokens += " "+ tokens_table[k]
                         nbContainers += 1
                         break
                     else:    
                         i += 1
+                k += 1
 
-            containerIDs += '"'
-            containerIPs += '"'
-            createCHPRoutes(nbContainers, containerIDs, containerIPs)
+            containersInfo = '"'+containerIDs+containerIPs+containerTokens+'"'
+            addDockerCHPRoutes(nbContainers, containersInfo)
+            addFrontalCHPRoutes(containerIDs, containerTokens)
 
             #cette partie est éxecutée lorsque on sélectionne un seul conteneur
         elif len(data[1]) == 12:
             containerID = data[1]
-            containerIP = ""
+            containerToken = data[2]
+            containerInfos = '"'
             i = 0
             while i < length: 
                 if containerID == rootTag[i][0].text:
-                    containerIP = rootTag[i][4].text
+                    containerInfos += " "+containerID+" "+rootTag[i][4].text+" "+containerToken
                     break
                 else:
                     i += 1
-            createCHPRoutes(1, containerID, containerIP)
+            containerInfos += '"'
+            addDockerCHPRoutes(1, containerInfos)
+            addFrontalCHPRoutes(containerID, containerToken)
 
 
 
@@ -179,6 +193,9 @@ while 1:
             "/var/www/pageDeGestion/html/playbooks/stopSelection.yml",
             "-e",
             "selection={0}".format(data[1])])
+        if data[0] == "stop_selection":
+            data[1] = data[1][2:-1]
+            data[1] = '"'+str(data[3])+' '+data[1]+'"'
 ##########################################DESTROY_SELECTION#############################################
     elif data[0] == "destroy_selection" or data[0] == "destroy":
         removeRouteFromCHP = True
@@ -188,6 +205,9 @@ while 1:
             "/var/www/pageDeGestion/html/playbooks/destroySelection.yml",
             "-e",
             "selection={0}".format(data[1])])
+        if data[0] == "destroy_selection":
+            data[1] = data[1][2:-1]
+            data[1] = '"'+str(data[3])+' '+data[1]+'"'
 ##############################################DELETE_IMAGE##############################################
     elif data[0] == "delete_img":
         getContainersInfo = False
@@ -216,7 +236,7 @@ while 1:
     if getContainersInfo == True:
         getContainersinfos()
     if removeRouteFromCHP == True:
-        subprocess.Popen(["bash", "/var/www/pageDeGestion/html/scripts/scriptRemoveRouteFromCHP", data[1]])
+        subprocess.Popen(["bash", "/var/www/pageDeGestion/html/scripts/scriptRemoveRouteFromCHP", data[1], data[2]])
         print('Route(s) est supprimée(s) du CHP présent sur le serveur Frontal avec succès')
         # supp de la route au CHP present sur le serveur DockerEngine.
         c = subprocess.Popen(["/usr/bin/ansible-playbook",
@@ -224,7 +244,9 @@ while 1:
             "/etc/ansible/hosts",
             "/var/www/pageDeGestion/html/playbooks/removeRouteFromCHP.yml",
             "-e",
-            "containerID={0}".format(data[1])])
+            "containerID={0}".format(data[1]),
+            "-e",
+            "containerToken={0}".format(data[2])])
         c.communicate();
 
     #la commande suivante envoie ok (peu importe ce que l'on envoie)  à la page php qui est normalement en train d'attendre

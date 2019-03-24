@@ -5,37 +5,41 @@ include ('Controller.php');
 
 $controller = new Controller();
 
-$token_value = $controller->getTokenValue();
-
 $containersInfoMatrix = $controller->displayContainersInfo();
 
-$nbConteneursTotal = $controller->getContainersTotalNumber();
+$nbConteneursTotal = count($_SESSION['containers']);
 
 #images_list est un tableau qui contient toutes les images docker
 $images_list = $controller->getImagesList();
 
 # var pour la partie terminal car la redirection de cette fonction (terminal) est different des autres fonctions
-
+$executeHeaderForTerminal = false;
 
 if(isset($_GET['action']) AND !empty($_GET['action']) OR (!empty($_POST))){
 
 	if(isset($_GET['action']) AND !empty($_GET['action']))
 	{
 		$id = $_GET['id'];
+		$token = $_GET['token'];
 
 		if(strcmp($_GET['action'], 'start') == 0){
-			$message = array("start", $id);
+			$message = array("start", $id, $token);
 		}
 		elseif(strcmp($_GET['action'], 'stop') == 0){
-			$message = array("stop", $id);
+			$message = array("stop", $id, $token);
 		}
 		elseif(strcmp($_GET['action'], 'destroy') == 0){
-			$message = array("destroy", $id);
+			$controller->deleteContainer($id);
+			$message = array("destroy", $id, $token);
 		}
-		elseif(strcmp($_GET['action'], 'terminal') == 0){
-			if(hash_equals($token_value, $_GET['token'])){	
+		elseif(strcmp($_GET['action'], 'open') == 0){
+
+			$container_nb = $_GET['nb'];
+
+			if($containersInfoMatrix[$container_nb][0] == $id AND $containersInfoMatrix[$container_nb][5] == $token){	
+				$executeHeaderForTerminal = true;
 				$containerIP = $_GET['ip'];
-				header('Location: terminal/'.$id.'/');
+				header('Location: terminal/'.$id.'/'.$token.'/');
 				exit;
 			} else {
 				header('Location: error.html');
@@ -50,10 +54,6 @@ if(isset($_GET['action']) AND !empty($_GET['action']) OR (!empty($_POST))){
 			$nb = $_POST['nb'];
 			$image = $_POST['image'];
 			$message = array("create", $nb, $image);
-		}
-		elseif(isset($_POST['destroyall']))
-		{
-			$message = array("destroyall");
 		}
 		elseif(isset($_POST['refresh']))
 		{
@@ -82,10 +82,7 @@ if(isset($_GET['action']) AND !empty($_GET['action']) OR (!empty($_POST))){
 		}
 		}
 
-		if($executeHeaderForTerminal){
-
-		}
-		else {
+		if($executeHeaderForTerminal == false){
 			$controller->socketHandler($message);	
 			header('Location: index.php');
 			exit;
@@ -173,7 +170,7 @@ if(isset($_GET['action']) AND !empty($_GET['action']) OR (!empty($_POST))){
 			  <input type="checkbox" name="list_selected_id[]" value=<?= $containersInfoMatrix[$i][0]?>>
 		  </td>
 		  <?php
-		  /* var $j nb info qu'on va afficher ici on a 4 ID, NOM, IMAGE, ETAT
+		  /* var $j nb info qu'on va afficher ici on a 5 ID, NOM, IMAGE, ETAT et IP de conteneur
 			    * encore le prob de l'affichge existe parce que le tableau se charge avant que les infos 
 			    * des conteneurs soit recuperer du fichier retour.xml
 			    */
@@ -187,10 +184,10 @@ if(isset($_GET['action']) AND !empty($_GET['action']) OR (!empty($_POST))){
 			    // Les actions qu'on peut effectuer sur nos conteneurs
 			    ?>
 			    <td align='center'>
-				    <a href="index.php?id=<?= $containersInfoMatrix[$i][0]?>&amp;action=start" class="button button1">LANCER</a>
-				    <a href="index.php?id=<?= $containersInfoMatrix[$i][0]?>&amp;action=stop" class="button button2">ARRÊTER</a>
-				    <a href="index.php?id=<?= $containersInfoMatrix[$i][0]?>&amp;action=destroy" class="button button3">DÉTRUIRE</a>
-				    <a href="index.php?id=<?= $containersInfoMatrix[$i][0]?>&amp;action=terminal&amp;token=<?= $token_value; ?>" target="_blank" class="button button5">TERMINAL</a>
+				    <a href="index.php?id=<?= $containersInfoMatrix[$i][0]?>&amp;action=start&amp;token=<?= $containersInfoMatrix[$i][5]; ?>" class="button button1">LANCER</a>
+				    <a href="index.php?id=<?= $containersInfoMatrix[$i][0]?>&amp;action=stop&amp;token=<?= $containersInfoMatrix[$i][5]; ?>" class="button button2">ARRÊTER</a>
+				    <a href="index.php?id=<?= $containersInfoMatrix[$i][0]?>&amp;action=destroy&amp;token=<?= $containersInfoMatrix[$i][5]; ?>" class="button button3">DÉTRUIRE</a>
+				    <a href="index.php?id=<?= $containersInfoMatrix[$i][0]?>&amp;nb=<?= $i ?>&amp;action=open&amp;token=<?= $containersInfoMatrix[$i][5]; ?>" target="_blank" class="button button5">TERMINAL</a>
 			    </td>
 	  </tr>
 	  <?php

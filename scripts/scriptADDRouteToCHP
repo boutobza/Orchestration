@@ -1,21 +1,26 @@
 #!/bin/bash
 
 containerID=$1
+containerToken=$2
+
 length=${#containerID}
 # 12 en bas représente le nombre de caractères dans un ID conteneur docker
 if [ $length -eq 12 ]
 then
-        POST 192.168.56.102:8888/api/routes/$containerID <<- EOF
+        POST 192.168.56.102:8888/api/routes/$containerID/$containerToken <<- EOF
 	{ "target": "http://192.168.56.101:8000" }
 	EOF
 elif [ $length -gt 12 ]
 then
-        containerID=${containerID:2:-1}
-        IFS=' ' read -r -a array <<< "$containerID"
-        for id in "${array[@]}"
+        IFS=' ' read -r -a containerIDs <<< "$containerID"
+        IFS=' ' read -r -a containerTokens <<< "$containerToken"
+	length=${#containerIDs[@]}
+	i=0
+	while [ $i -lt $length ]
         do
-                POST 192.168.56.102:8888/api/routes/$id <<- EOF
+                POST 192.168.56.102:8888/api/routes/${containerIDs[i]}/${containerTokens[i]} <<- EOF
 		{ "target": "http://192.168.56.101:8000" }
 		EOF
+		(( i++ ))
         done
 fi

@@ -4,9 +4,9 @@
   remote_user: user
   tasks:
           - name: Suppression de la route(s) ajoutée(s) au CHP présent sur le serveur DockerEngine
-            command: /home/user/DockerScripts/scriptRemoveRouteFromCHP {{ containerID }}
-            register: result
+            command: /home/user/DockerScripts/scriptRemoveRouteFromCHP {{ containerID }} {{ containerToken }}
             vars:
                     containerID: "{{ containerID }}"
+                    containerToken: "{{ containerToken }}"
 ...
 
