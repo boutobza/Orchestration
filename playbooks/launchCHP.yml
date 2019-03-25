@@ -6,4 +6,6 @@
   tasks:
           - name: Lancement du CHP present sur le serveur DockerEngine
             shell: /home/user/DockerScripts/scriptLaunchCHP
+            async: 45
+            poll: 0
 
