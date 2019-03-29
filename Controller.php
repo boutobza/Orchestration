@@ -211,7 +211,7 @@ class Controller{
 								$containersInfoMatrix[$j] = array($containersInfoMatrix[$j][0],
 												  $containersInfoMatrix[$j][1],
 												  $containersInfoMatrix[$j][2],
-												  $containersInfoMatrix[$j][3],
+												  $containersStatus[$i]->nodeValue,
 												  $containersIPs[$i]->nodeValue,
 											  	  $containersInfoMatrix[$j][5]);
 								break;

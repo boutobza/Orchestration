@@ -90,6 +90,7 @@ while 1:
 #############################################REFRESH###################################################
     if data[0] == "refresh":
         getContainersInfo = True
+        getImagesList = True 
         waitForCmdToFinish = False
 ###############################################CREATE###################################################
     elif data[0] == "create":
