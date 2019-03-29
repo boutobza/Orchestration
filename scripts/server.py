@@ -89,6 +89,7 @@ while 1:
 
 #############################################REFRESH###################################################
     if data[0] == "refresh":
+        getImagesList = True
         getContainersInfo = True
         getImagesList = True 
         waitForCmdToFinish = False
